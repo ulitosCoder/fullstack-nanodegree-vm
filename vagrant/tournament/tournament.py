@@ -38,7 +38,7 @@ def deleteMatches():
 
 def deletePlayers():
     """Remove all the player records from the database."""
-    print "deleting players"
+    
     genericDelete("players")
 
 def countPlayers():
@@ -93,6 +93,18 @@ def playerStandings():
         matches: the number of matches the player has played
     """
 
+
+    db = connect()
+    c = db.cursor()
+
+    query = "SELECT *  from standings"
+    c.execute(query)
+
+    aux = c.fetchall()
+
+    db.close()
+
+    return aux
 
 def reportMatch(winner, loser):
     """Records the outcome of a single match between two players.
