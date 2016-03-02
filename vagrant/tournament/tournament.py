@@ -11,17 +11,50 @@ def connect():
     return psycopg2.connect("dbname=tournament")
 
 
+
+def genericDelete(table_name):
+    """Generic function to truncate a given table
+
+        Args:
+            table_name: the table to be truncated
+
+    """
+
+    db = connect()
+
+    query = "DELETE FROM %s;" % table_name
+
+    c = db.cursor()
+    c.execute(query)
+    db.commit()
+    db.close()
+
 def deleteMatches():
     """Remove all the match records from the database."""
+    
+    genericDelete("matches")
+    
 
 
 def deletePlayers():
     """Remove all the player records from the database."""
-
+    print "deleting players"
+    genericDelete("players")
 
 def countPlayers():
     """Returns the number of players currently registered."""
+    db = connect()
 
+    curs = db.cursor()
+    query = "SELECT COUNT(id) as players_count FROM players"
+    curs.execute(query)
+    aux = curs.fetchone()
+
+    players = int(aux[0])
+
+    db.close()
+
+    return players
 
 def registerPlayer(name):
     """Adds a player to the tournament database.
@@ -32,6 +65,18 @@ def registerPlayer(name):
     Args:
       name: the player's full name (need not be unique).
     """
+
+    db = connect()
+
+    c = db.cursor()
+
+    query  = "INSERT INTO players (name) VALUES ('%s')" % name
+
+    c.execute(query)
+    
+    db.commit()
+
+    db.close()
 
 
 def playerStandings():
