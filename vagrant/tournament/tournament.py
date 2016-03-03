@@ -70,6 +70,8 @@ def registerPlayer(name):
 
     c = db.cursor()
 
+    name = name.replace("'","''")
+    
     query  = "INSERT INTO players (name) VALUES ('%s')" % name
 
     c.execute(query)
@@ -84,6 +86,8 @@ def playerStandings():
 
     The first entry in the list should be the player in first place, or a player
     tied for first place if there is currently a tie.
+
+    NOTE: check tournamer.sql for detailed description in the 'standings' view
 
     Returns:
       A list of tuples, each of which contains (id, name, wins, matches):
@@ -113,6 +117,15 @@ def reportMatch(winner, loser):
       winner:  the id number of the player who won
       loser:  the id number of the player who lost
     """
+
+    db = connect()
+    c = db.cursor()
+    query = "INSERT INTO matches (winner,loser) VALUES (%d,%d)" % (winner,loser)
+
+    c.execute(query)
+
+    db.commit()
+    db.close()
  
  
 def swissPairings():
