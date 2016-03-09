@@ -143,5 +143,29 @@ def swissPairings():
         id2: the second player's unique id
         name2: the second player's name
     """
+    thePairings = []
+    standings = playerStandings()
 
+    players_count = len(standings)
+    print "players: ", players_count
+    
+    db = connect()
+    c = db.cursor()
+
+    player = [ item[0:2] for item in standings]
+
+    for atuple in player:
+        print atuple
+
+    idx = 0
+    while idx < players_count:
+        newt = player[idx], player[idx+1]
+        thePairings.append(newt)
+        idx = idx + 2
+
+    db.close()
+
+    print thePairings
+    
+    return thePairings
 

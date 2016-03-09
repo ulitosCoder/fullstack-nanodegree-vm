@@ -92,8 +92,8 @@ def testReportMatches():
         elif i in (id2, id4) and w != 0:
             raise ValueError("Each match loser should have zero wins recorded.")
     print "7. After a match, players have updated standings."
-    for arecord in standings:
-        print arecord
+    #for arecord in standings:
+    #    print arecord
 
     deleteMatches()
     standings = playerStandings()
@@ -105,8 +105,8 @@ def testReportMatches():
         if w != 0:
             raise ValueError("After deleting matches, players should have zero wins recorded.")
     print "8. After match deletion, player standings are properly reset.\n9. Matches are properly deleted."
-    for arecord in standings:
-        print arecord
+    #for arecord in standings:
+    #    print arecord
 
     reportMatch(id1, id2)
     reportMatch(id3, id4)
@@ -158,8 +158,8 @@ def testPairings():
 
 
 if __name__ == '__main__':
-    testCount()
-    testStandingsBeforeMatches()
-    testReportMatches()
-    #testPairings()
+    #testCount()
+    #testStandingsBeforeMatches()
+    #testReportMatches()
+    testPairings()
     print "Success!  All tests pass!"
