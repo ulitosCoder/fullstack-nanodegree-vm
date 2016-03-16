@@ -104,11 +104,19 @@ def playerStandings():
     query = "SELECT *  from standings"
     c.execute(query)
 
-    aux = c.fetchall()
+    standings = c.fetchall()
+
+    players_count = len(standings)
+    idx = 0
+    while idx < players_count:
+        # in this loop check if two players have the same wins,
+
+        idx = idx + 2
+
 
     db.close()
 
-    return aux
+    return standings
 
 def reportMatch(winner, loser):
     """Records the outcome of a single match between two players.
@@ -120,11 +128,51 @@ def reportMatch(winner, loser):
 
     db = connect()
     c = db.cursor()
+
+    query = "SELECT score FROM players WHERE id = {player_id}"
+
+    c.execute(query.format(player_id=winner))
+    w_score = c.fetchone()
+    w_score = int(w_score[0])
+
+    c.execute(query.format(player_id=loser))
+    l_score = c.fetchone()
+    l_score = int(l_score[0])
+
+    if w_score == l_score:
+        #sum 2 to winner
+        #sub 2 to loser
+        w_score = w_score + 2
+        l_score = l_score - 2
+    elif w_score < l_score:
+        #sum 3 to winner
+        #sub 3 to loser
+        w_score = w_score + 3
+        l_score = l_score - 3
+    else:
+        w_score > l_score
+        #sum 1 to winner
+        #sub 1 to loser
+        w_score = w_score + 1
+        l_score = l_score - 1
+
+    query = "UPDATE players SET score = {new_score} WHERE id = {player_id}"
+
+    c.execute(query.format(new_score=w_score,player_id=winner))
+
+    c.execute(query.format(new_score=l_score,player_id=loser))
+
     query = "INSERT INTO matches (winner,loser) VALUES (%d,%d)" % (winner,loser)
 
     c.execute(query)
 
     db.commit()
+
+    query = "SELECT * FROM players"
+    c.execute(query)
+    print "querying all"
+    print c.fetchall()
+
     db.close()
  
  
@@ -154,8 +202,8 @@ def swissPairings():
 
     player = [ item[0:2] for item in standings]
 
-    for atuple in player:
-        print atuple
+    #for atuple in player:
+    #    print atuple
 
     idx = 0
     while idx < players_count:
@@ -165,7 +213,7 @@ def swissPairings():
 
     db.close()
 
-    print thePairings
+    #print thePairings
     
     return thePairings
 
