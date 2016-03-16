@@ -8,24 +8,30 @@
 
 --CREATE DATABASE tournament;
 
---DROP VIEW IF EXISTS standings;
---DROP VIEW IF EXISTS scores;
+DROP VIEW IF EXISTS scores;
+DROP VIEW IF EXISTS standings;
 DROP VIEW IF EXISTS players_scores;
+DROP VIEW IF EXISTS players_loses;
+DROP VIEW IF EXISTS players_wins;
+DROP VIEW IF EXISTS players_matches;
 
+DROP TABLE IF EXISTS  matches;
+DROP TABLE IF EXISTS players;
 CREATE TABLE IF NOT EXISTS players(
 	name varchar(80) NOT NULL,
+	score integer DEFAULT 0,
 	id serial NOT NULL,
 	PRIMARY KEY (id)
 );
 
 
-DROP TABLE IF EXISTS  matches;
 CREATE TABLE IF NOT EXISTS matches(
 	winner serial NOT NULL REFERENCES players (id),
 	loser serial NOT NULL REFERENCES players (id),
 	match_id serial NOT NULL,
 	PRIMARY KEY (match_id),
-	UNIQUE (winner, loser)
+	UNIQUE (winner, loser),
+	UNIQUE (loser, winner)
 );
 
 
