@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# 
+#
 # tournament.py -- implementation of a Swiss-system tournament
 #
 
@@ -9,7 +9,6 @@ import psycopg2
 def connect():
     """Connect to the PostgreSQL database.  Returns a database connection."""
     return psycopg2.connect("dbname=tournament")
-
 
 
 def genericDelete(table_name):
@@ -29,17 +28,18 @@ def genericDelete(table_name):
     db.commit()
     db.close()
 
+
 def deleteMatches():
     """Remove all the match records from the database."""
-    
+
     genericDelete("matches")
-    
 
 
 def deletePlayers():
     """Remove all the player records from the database."""
-    
+
     genericDelete("players")
+
 
 def countPlayers():
     """Returns the number of players currently registered."""
@@ -56,12 +56,13 @@ def countPlayers():
 
     return players
 
+
 def registerPlayer(name):
     """Adds a player to the tournament database.
-  
+
     The database assigns a unique serial id number for the player.  (This
     should be handled by your SQL database schema, not in your Python code.)
-  
+
     Args:
       name: the player's full name (need not be unique).
     """
@@ -70,12 +71,12 @@ def registerPlayer(name):
 
     c = db.cursor()
 
-    name = name.replace("'","''")
-    
-    query  = "INSERT INTO players (name) VALUES ('%s')" % name
+    name = name.replace("'", "''")
+
+    query = "INSERT INTO players (name) VALUES ('%s')" % name
 
     c.execute(query)
-    
+
     db.commit()
 
     db.close()
@@ -97,7 +98,6 @@ def playerStandings():
         matches: the number of matches the player has played
     """
 
-
     db = connect()
     c = db.cursor()
 
@@ -105,21 +105,44 @@ def playerStandings():
     c.execute(query)
 
     standings = c.fetchall()
-
+    #print standings
+    query = "SELECT score FROM players WHERE id = {player_id}"
     players_count = len(standings)
     idx = 0
     while idx < players_count:
         # in this loop check if two players have the same wins,
+        w1 = standings[idx][2]
+        w2 = standings[idx+1][2]
+
+        #if the players are matched, get the individal score of each
+        if w1 == w2:
+            id1 = standings[idx][0]
+            c.execute(query.format(player_id=id1))
+            s1 = c.fetchone()
+            s1 = int(s1[0])
+
+            id2 = standings[idx+1][0]
+            c.execute(query.format(player_id=id2))
+            s2 = c.fetchone()
+            s2 = int(s2[0])
+
+            if s2 > s1:
+                print "swaping players"
+                entry1 = standings[idx]
+                standings[idx] = standings[idx+1]
+                standings[idx+1] = entry1
 
         idx = idx + 2
-
 
     db.close()
 
     return standings
 
+
 def reportMatch(winner, loser):
     """Records the outcome of a single match between two players.
+	
+	This procedure also will update the player's score in the players table
 
     Args:
       winner:  the id number of the player who won
@@ -129,6 +152,7 @@ def reportMatch(winner, loser):
     db = connect()
     c = db.cursor()
 
+    #these following lines will retrieve 
     query = "SELECT score FROM players WHERE id = {player_id}"
 
     c.execute(query.format(player_id=winner))
@@ -139,51 +163,45 @@ def reportMatch(winner, loser):
     l_score = c.fetchone()
     l_score = int(l_score[0])
 
+    #these criteria rewards/punish a player depending how strog is the opponent
+    #e.g. a winner gets more points for defeating a stronger player that if
+    # the opponent was weaker
+	#e.g.2 A loser's punish is bigger if the winner was weaker
     if w_score == l_score:
-        #sum 2 to winner
-        #sub 2 to loser
         w_score = w_score + 2
         l_score = l_score - 2
     elif w_score < l_score:
-        #sum 3 to winner
-        #sub 3 to loser
         w_score = w_score + 3
         l_score = l_score - 3
     else:
         w_score > l_score
-        #sum 1 to winner
-        #sub 1 to loser
         w_score = w_score + 1
         l_score = l_score - 1
 
     query = "UPDATE players SET score = {new_score} WHERE id = {player_id}"
 
-    c.execute(query.format(new_score=w_score,player_id=winner))
+    c.execute(query.format(new_score=w_score, player_id=winner))
 
-    c.execute(query.format(new_score=l_score,player_id=loser))
+    c.execute(query.format(new_score=l_score, player_id=loser))
 
-    query = "INSERT INTO matches (winner,loser) VALUES (%d,%d)" % (winner,loser)
+    query = "INSERT INTO matches (winner,loser) VALUES (%d,%d)" % (
+        winner, loser)
 
     c.execute(query)
 
     db.commit()
 
-    query = "SELECT * FROM players"
-    c.execute(query)
-    print "querying all"
-    print c.fetchall()
-
     db.close()
- 
- 
+
+
 def swissPairings():
     """Returns a list of pairs of players for the next round of a match.
-  
+
     Assuming that there are an even number of players registered, each player
     appears exactly once in the pairings.  Each player is paired with another
     player with an equal or nearly-equal win record, that is, a player adjacent
     to him or her in the standings.
-  
+
     Returns:
       A list of tuples, each of which contains (id1, name1, id2, name2)
         id1: the first player's unique id
@@ -195,25 +213,18 @@ def swissPairings():
     standings = playerStandings()
 
     players_count = len(standings)
-    print "players: ", players_count
-    
     db = connect()
     c = db.cursor()
 
-    player = [ item[0:2] for item in standings]
-
-    #for atuple in player:
-    #    print atuple
+    players_items = [item[0:2] for item in standings]
 
     idx = 0
     while idx < players_count:
-        newt = player[idx], player[idx+1]
+        newt = players_items[idx][0], players_items[idx][1], \
+            players_items[idx+1][0], players_items[idx+1][1]
         thePairings.append(newt)
         idx = idx + 2
 
     db.close()
 
-    #print thePairings
-    
     return thePairings
-
