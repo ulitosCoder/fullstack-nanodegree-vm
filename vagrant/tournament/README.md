@@ -1,3 +1,19 @@
 
 Udacity's Web developer full stack Project 2
-==========================================
+================================================
+
+To properly use the tourname.py module these pre-requisites must be met.
+1. PostgreSQL 9.3.11 installed
+2. psycopg2 module installed
+3. Before starting the test, run the tournamet.sql script
+
+
+NOTE: The easiest way to test this code is to instal VirtualBox and Vagrant.
+Then navigate on your console to the directory containing this file and execute:
+	$vagarant up 
+
+then 
+	$vagrant ssh
+
+The predefined virtual machine already has the necessary requirements for this 
+code to run. 

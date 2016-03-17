@@ -12,7 +12,7 @@ def connect():
 
 
 def genericDelete(table_name):
-    """Generic function to truncate a given table
+    """Generic function to delete the rows of a given table
 
         Args:
             table_name: the table to be truncated
@@ -71,7 +71,8 @@ def registerPlayer(name):
 
     c = db.cursor()
 
-    name = name.replace("'", "''")
+    #Sanitization for handling single quotes on names
+    name = name.replace("'", "''") 
 
     query = "INSERT INTO players (name) VALUES ('%s')" % name
 
@@ -115,6 +116,7 @@ def playerStandings():
         w2 = standings[idx+1][2]
 
         #if the players are matched, get the individal score of each
+        #and swap places if necessary
         if w1 == w2:
             id1 = standings[idx][0]
             c.execute(query.format(player_id=id1))
