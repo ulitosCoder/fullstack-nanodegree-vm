@@ -21,10 +21,12 @@ def genericDelete(table_name):
 
     db = connect()
 
-    query = "DELETE FROM %s;" % table_name
+    query = "DELETE FROM %s" % table_name
 
     c = db.cursor()
+    
     c.execute(query)
+
     db.commit()
     db.close()
 
@@ -71,12 +73,13 @@ def registerPlayer(name):
 
     c = db.cursor()
 
-    #Sanitization for handling single quotes on names
-    name = name.replace("'", "''") 
+    query = "INSERT INTO players (name) VALUES (%s)"
 
-    query = "INSERT INTO players (name) VALUES ('%s')" % name
+    # as noted on
+    # http://initd.org/psycopg/docs/usage.html#passing-parameters-to-sql-queries
+    data = (name, )
 
-    c.execute(query)
+    c.execute(query, data)
 
     db.commit()
 
@@ -86,8 +89,8 @@ def registerPlayer(name):
 def playerStandings():
     """Returns a list of the players and their win records, sorted by wins.
 
-    The first entry in the list should be the player in first place, or a player
-    tied for first place if there is currently a tie.
+    The first entry in the list should be the player in first place,
+    or a player tied for first place if there is currently a tie.
 
     NOTE: check tournamer.sql for detailed description in the 'standings' view
 
@@ -106,7 +109,7 @@ def playerStandings():
     c.execute(query)
 
     standings = c.fetchall()
-    #print standings
+
     query = "SELECT score FROM players WHERE id = {player_id}"
     players_count = len(standings)
     idx = 0
@@ -115,8 +118,8 @@ def playerStandings():
         w1 = standings[idx][2]
         w2 = standings[idx+1][2]
 
-        #if the players are matched, get the individal score of each
-        #and swap places if necessary
+        # if the players are matched, get the individual score of each
+        # and swap places if necessary
         if w1 == w2:
             id1 = standings[idx][0]
             c.execute(query.format(player_id=id1))
@@ -143,8 +146,8 @@ def playerStandings():
 
 def reportMatch(winner, loser):
     """Records the outcome of a single match between two players.
-	
-	This procedure also will update the player's score in the players table
+
+    This procedure also will update the player's score in the players table
 
     Args:
       winner:  the id number of the player who won
@@ -154,21 +157,24 @@ def reportMatch(winner, loser):
     db = connect()
     c = db.cursor()
 
-    #these following lines will retrieve 
-    query = "SELECT score FROM players WHERE id = {player_id}"
+    # these following lines will retrieve
+    query = "SELECT score FROM players WHERE id = %s"
 
-    c.execute(query.format(player_id=winner))
+    data = (winner, )
+    c.execute(query, data)
     w_score = c.fetchone()
     w_score = int(w_score[0])
 
-    c.execute(query.format(player_id=loser))
+    data = (loser, )
+    c.execute(query, data)
     l_score = c.fetchone()
     l_score = int(l_score[0])
 
-    #these criteria rewards/punish a player depending how strog is the opponent
-    #e.g. a winner gets more points for defeating a stronger player that if
+    # these criteria rewards/punish a player depending on
+    # how strog is the opponent
+    # e.g. a winner gets more points for defeating a stronger player that if
     # the opponent was weaker
-	#e.g.2 A loser's punish is bigger if the winner was weaker
+    # e.g.2 A loser's punish is bigger if the winner was weaker
     if w_score == l_score:
         w_score = w_score + 2
         l_score = l_score - 2
@@ -180,16 +186,18 @@ def reportMatch(winner, loser):
         w_score = w_score + 1
         l_score = l_score - 1
 
-    query = "UPDATE players SET score = {new_score} WHERE id = {player_id}"
+    query = "UPDATE players SET score = %s WHERE id = %s"
 
-    c.execute(query.format(new_score=w_score, player_id=winner))
+    data = (w_score, winner, )
+    c.execute(query,data)
 
-    c.execute(query.format(new_score=l_score, player_id=loser))
+    data = (l_score, loser, )
+    c.execute(query, data)
 
-    query = "INSERT INTO matches (winner,loser) VALUES (%d,%d)" % (
-        winner, loser)
+    query = "INSERT INTO matches (winner,loser) VALUES (%s,%s)" 
 
-    c.execute(query)
+    data = (winner, loser)
+    c.execute(query, data)
 
     db.commit()
 
