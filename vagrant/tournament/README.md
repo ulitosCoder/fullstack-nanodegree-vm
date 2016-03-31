@@ -1,12 +1,22 @@
 
-Udacity's Web developer full stack Project 2
+#Udacity's Web developer full stack Project 2
 ================================================
 
    This project helps to manage a simple tournament in the Swiss system
 where every  player gets to play in every round. 
 
+#Install
+---------
+
+
+To properly use the tourname.py module these pre-requisites must be met.
+1. PostgreSQL 9.3.11 installed
+2. psycopg2 module installed
+3. Before starting the test, run the tournamet.sql script
+
 
 To run this code there are, essentially, two options
+
 1. Install the vagrant VM package (the easiest way)
 Or
 2. Install the prerequisites for running the code.
@@ -16,12 +26,6 @@ Or
 1. Running the code with Vagrant
 
 
-
-
-To properly use the tourname.py module these pre-requisites must be met.
-1. PostgreSQL 9.3.11 installed
-2. psycopg2 module installed
-3. Before starting the test, run the tournamet.sql script
 
 
 NOTE: The easiest way to test this code is to instal VirtualBox and Vagrant.
