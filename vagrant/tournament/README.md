@@ -16,9 +16,11 @@ To properly use the tourname.py module these pre-requisites must be met.
 The easiest way to test this code is with [Vagrant](https://www.vagrantup.com/)
 
 Follow these steps to get you started:
+
 1. Install [Vagrant](https://www.vagrantup.com/)
 2. Install [VirtualBox](https://www.virtualbox.org/)
 3. Install [cygwin](https://www.cygwin.com/), be sure to select **git** from le packages list 
+
 ---------------
 
 ## Setting up the environment
