@@ -24,6 +24,7 @@ Follow these steps to get you started:
 ---------------
 
 ## Setting up the environment
+
 1. Clone my tournament repository 
     * Open a cygwin terminal
     * execute `git clone https://github.com/ulitosCoder/fullstack-nanodegree-vm`
@@ -33,6 +34,7 @@ Follow these steps to get you started:
     * `vagrant up`
 
    The source code in the repository will be accessible in the VM with the synced folders in /vagrant/
+   
 -------------------
 
 ## Running the code
@@ -40,19 +42,23 @@ Follow these steps to get you started:
 After the Vagrant VM was prepared log into it by executing `vagrant ssh`, in the tournament directory in your cygwin terminal.
 
 Once inside the VM do the following:
+
 1. `cd /vagrant/tournament/`
 2. `psql`
 
 Once you are in the PosrgreSQL console proceed to create the database and the schema
+
 1. `create database tournament;`
 2. `\c tournament`
 3. `\i tournament.sql`
 4. `\q`
 
 Run the `tournament_test.py` script
+
 * `python tournament_test.py`
 
 ------------------------
+
 For furher details check this [Getting started](https://docs.google.com/document/d/16IgOm4XprTaKxAa8w02y028oBECOoB1EI1ReddADEeY/pub?embedded=true) guide
 
 
