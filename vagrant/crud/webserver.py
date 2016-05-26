@@ -67,7 +67,7 @@ class webServerHandler(BaseHTTPRequestHandler):
                 query1 = session.query(Restaurant).order_by(asc(Restaurant.name)).all()
                 for item in query1:
                     output += '<p>%s</p>' % item.name
-                    output += '<a href="#"">Edit %s</a></br>' % item.name
+                    output += '<a href="%s/edit">Edit %s</a></br>' % (item.id,item.name)
                     output += '<a href="#"">Delete %s</a></br>' % item.name
                     output += '</br>'
                     print item.name #, ', ',  item.dateOfBirth
