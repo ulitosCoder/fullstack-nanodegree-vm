@@ -20,9 +20,7 @@ for item in query1:
 	print item.name #, ', ',  item.dateOfBirth
 
 #2. Query all of the puppies that are less than 6 months old organized by the youngest firs
-
 today = datetime.datetime.now().date()
-
 sixMonths = datetime.timedelta(days=(6*30))
 sixMonthsAgo = today-sixMonths
 
