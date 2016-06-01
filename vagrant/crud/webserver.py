@@ -85,6 +85,27 @@ class webServerHandler(BaseHTTPRequestHandler):
                 #print output
                 return
 
+            if self.path.endswith("/delete"):
+                print self.path
+                restaurantIDPath = self.path.split("/")[1]
+                print "deleting p1", restaurantIDPath
+                myRestaurantQuery = session.query(Restaurant).filter_by(
+                    id=restaurantIDPath).one()
+
+                print "deleting p1", myRestaurantQuery
+                if myRestaurantQuery:
+                    self.send_response(200)
+                    self.send_header('Content-type', 'text/html')
+                    self.end_headers()
+                    output = ""
+                    output += "<html><body>"
+                    output += "<h1>Are you sure you want to delete %s?" % myRestaurantQuery.name
+                    output += "<form method='POST' enctype = 'multipart/form-data' action = '/restaurants/%s/delete'>" % restaurantIDPath
+                    output += "<input type = 'submit' value = 'Delete'>"
+                    output += "</form>"
+                    output += "</body></html>"
+                    self.wfile.write(output)
+
             if self.path.endswith("/restaurants"):
                 self.send_response(200)
                 self.send_header('Content-type', 'text/html')
@@ -93,18 +114,17 @@ class webServerHandler(BaseHTTPRequestHandler):
                 output += "<html><body>"
                 output += "<h1>&#161 Hola !</h1>"
                 
-                output += "<a href='/restaurants/new'> Add new Restaurant herrrre </a>"
                 query1 = session.query(Restaurant).order_by(asc(Restaurant.name)).all()
                 for item in query1:
                     output += '<p>%s</p>' % item.name
                     output += '<a href="%s/edit">Edit %s</a></br>' % (item.id,item.name)
-                    output += '<a href="#"">Delete %s</a></br>' % item.name
+                    output += '<a href="%s/delete">Delete %s</a></br>' % (item.id,item.name)
                     output += '</br>'
-                    print item.name #, ', ',  item.dateOfBirth
+                    
 
                 output += "</body></html>"
                 self.wfile.write(output)
-                print output
+                #print output
                 return
 
         except IOError:
@@ -121,6 +141,21 @@ class webServerHandler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         try:
+            if self.path.endswith("/delete"):
+                print 'deleting ', self.path
+                restaurantIDPath = self.path.split("/")[2]
+                print restaurantIDPath
+                myRestaurantQuery = session.query(Restaurant).filter_by(
+                    id=restaurantIDPath).one()
+                print myRestaurantQuery
+                if myRestaurantQuery:
+                    session.delete(myRestaurantQuery)
+                    session.commit()
+                    self.send_response(301)
+                    self.send_header('Content-type', 'text/html')
+                    self.send_header('Location', '/restaurants')
+                    self.end_headers()
+
             output = ""
             output += "<html><body>"
             
