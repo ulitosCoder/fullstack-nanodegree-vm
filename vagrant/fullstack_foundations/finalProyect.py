@@ -15,44 +15,74 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
+
+#Fake Restaurants
+restaurant = {'name': 'The CRUDdy Crab', 'id': '1'}
+
+restaurants = [{'name': 'The CRUDdy Crab', 'id': '1'}, {'name':'Blue Burgers', 'id':'2'},{'name':'Taco Hut', 'id':'3'}]
+
+
+#Fake Menu Items
+items = [ {'name':'Cheese Pizza', 'description':'made with fresh cheese', 'price':'$5.99','course' :'Entree', 'id':'1'}, {'name':'Chocolate Cake','description':'made with Dutch Chocolate', 'price':'$3.99', 'course':'Dessert','id':'2'},{'name':'Caesar Salad', 'description':'with fresh organic vegetables','price':'$5.99', 'course':'Entree','id':'3'},{'name':'Iced Tea', 'description':'with lemon','price':'$.99', 'course':'Beverage','id':'4'},{'name':'Spinach Dip', 'description':'creamy dip with fresh spinach','price':'$1.99', 'course':'Appetizer','id':'5'} ]
+item =  {'name':'Cheese Pizza','description':'made with fresh cheese','price':'$5.99','course' :'Entree'}
+
+
+
 @app.route('/')
 @app.route('/restaurant')
 def showRestautans():
-	return "This page will show restaurants"
+    #return "This page will show restaurants"
+    return render_template('restaurants.html', restaurants = restaurants)
 
 @app.route('/restaurant/new')
 def newRestaurant():
-	return "this page will be for maing a new restaurant"
+    #return "this page will be for maing a new restaurant"
+    return render_template('newRestaurant.html', restaurants = restaurants)
 
 
 @app.route('/restaurant/<int:restaurant_id>/edit')
 def editRestaurant(restaurant_id):
-	return "this page will be for editing restaurant %s" % restaurant_id
+    #return "this page will be for editing restaurant %s" % restaurant_id
+    try:
+        this_rest = restaurants[restaurant_id-1];
+        return render_template('editRestaurant.html', restaurant = this_rest)
+    except IndexError:
+        return render_template('notFound.html',itemval = restaurant_id)
+
 
 
 @app.route('/restaurant/<int:restaurant_id>/delete')
 def deleteRestaurant(restaurant_id):
-	return "this page will be for deleting restaurant %s" % restaurant_id
+    #return "this page will be for deleting restaurant %s" % restaurant_id
+    return render_template('deleteRestaurant.html', restaurant = restaurant)
 
 
 
 @app.route('/restaurant/<int:restaurant_id>')
 @app.route('/restaurant/<int:restaurant_id>/menu')
 def showMenu(restaurant_id):
-	return "This page will show menu of restaurant %s" %restaurant_id
+    #return "This page will show menu of restaurant %s" %restaurant_id
+    try: 
+        this_rest = restaurants[restaurant_id-1];
+        return render_template('menu.html', restaurant = this_rest)
+    except IndexError:
+        return render_template('notFound.html',itemval = restaurant_id)
 
 @app.route('/restaurant/<int:restaurant_id>/menu/new')
 def newMenuItem(restaurant_id):
-	return "This page will create a new item for restaurant %s" % restaurant_id
+    #return "This page will create a new item for restaurant %s" % restaurant_id
+    return render_template('newMenuItem.html', restaurant = restaurant)
 
 
 @app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/edit')
 def editMenuItem(restaurant_id,menu_id):
-	return "This page will edit the item  %s for restaurant %s" % (menu_id , restaurant_id)
+    #return "This page will edit the item  %s for restaurant %s" % (menu_id , restaurant_id)
+    return render_template('editMenuItem.html', restaurant = restaurant, item = item)
 
 @app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/delete')
 def deleteMenuItem(restaurant_id,menu_id):
-	return "This page will delete the item  %s for restaurant %s" % (menu_id , restaurant_id)
+    #return "This page will delete the item  %s for restaurant %s" % (menu_id , restaurant_id)
+    return render_template('deleteMenuItem.html', restaurant = restaurant, item = item)
 
 
 if __name__ == '__main__':
