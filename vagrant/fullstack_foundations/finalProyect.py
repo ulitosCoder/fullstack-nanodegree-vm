@@ -32,12 +32,16 @@ item =  {'name':'Cheese Pizza','description':'made with fresh cheese','price':'$
 @app.route('/restaurant')
 def showRestautans():
     #return "This page will show restaurants"
-    return render_template('restaurants.html', restaurants = restaurants)
+    real_restaurants = session.query(Restaurant).all()
+    return render_template('restaurants.html', restaurants = real_restaurants)
 
-@app.route('/restaurant/new')
+@app.route('/restaurant/new', methods=['GET','POST'])
 def newRestaurant():
     #return "this page will be for maing a new restaurant"
-    return render_template('newRestaurant.html', restaurants = restaurants)
+    if request.method == 'POST':
+        return "new rest %s created yay!" % request.form['name']
+    else:
+        return render_template('newRestaurant.html', restaurants = restaurants)
 
 
 @app.route('/restaurant/<int:restaurant_id>/edit')
