@@ -31,7 +31,6 @@ item =  {'name':'Cheese Pizza','description':'made with fresh cheese','price':'$
 @app.route('/')
 @app.route('/restaurant')
 def showRestautans():
-    #return "This page will show restaurants"
     real_restaurants = session.query(Restaurant).all()
     return render_template('restaurants.html', restaurants = real_restaurants)
 
@@ -39,17 +38,35 @@ def showRestautans():
 def newRestaurant():
     #return "this page will be for maing a new restaurant"
     if request.method == 'POST':
-        return "new rest %s created yay!" % request.form['name']
+        newRest = Restaurant(name=request.form['name'])
+        session.add(newRest)
+        session.commit()
+        flash("new Restaurant: %s created" % newRest.name)
+        return redirect(url_for('showRestautans'))
     else:
         return render_template('newRestaurant.html', restaurants = restaurants)
 
 
-@app.route('/restaurant/<int:restaurant_id>/edit')
+@app.route('/restaurant/<int:restaurant_id>/edit', methods=['GET','POST'])
 def editRestaurant(restaurant_id):
     #return "this page will be for editing restaurant %s" % restaurant_id
     try:
-        this_rest = restaurants[restaurant_id-1];
-        return render_template('editRestaurant.html', restaurant = this_rest)
+        real_restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
+        if request.method == 'POST':
+
+            oldName = real_restaurant.name
+            
+            if request.form['name']:
+                real_restaurant.name=request.form['name']
+            
+            session.add(real_restaurant)
+            session.commit()
+            
+            flash("Restaurant %s name changed to: %s " % (oldName, real_restaurant.name))
+
+            return redirect(url_for('showRestautans'))
+        else:
+            return render_template('editRestaurant.html', restaurant = real_restaurant)
     except IndexError:
         return render_template('notFound.html',itemval = restaurant_id)
 

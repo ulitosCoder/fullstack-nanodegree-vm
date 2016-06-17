@@ -12,13 +12,26 @@
 <a href="{{url_for('newRestaurant')}}"> Add new </a>
 </br></br>
 
+<!--MESSAGE FLASHING EXAMPLE -->
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+
+<ul>
+{% for message in messages %}
+  <li>{{message}}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
+
+
 {% for i in restaurants %}
 
 <div>
 
 <a href='{{url_for('showMenu', restaurant_id = i.id) }}'> {{i.name}} </a></br>
-<a href='#'> Edit </a></br>
-<a href='#'> Delete </a></br>
+<a href="{{url_for('editRestaurant', restaurant_id = i.id)}}"> Edit </a></br>
+<a href="{{url_for('deleteRestaurant', restaurant_id = i.id)}}"> Delete </a></br>
 
 </br>
 
