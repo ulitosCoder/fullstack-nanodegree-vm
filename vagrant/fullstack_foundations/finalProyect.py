@@ -67,32 +67,58 @@ def editRestaurant(restaurant_id):
             return redirect(url_for('showRestautans'))
         else:
             return render_template('editRestaurant.html', restaurant = real_restaurant)
-    except IndexError:
+    except:
         return render_template('notFound.html',itemval = restaurant_id)
 
 
 
-@app.route('/restaurant/<int:restaurant_id>/delete')
+@app.route('/restaurant/<int:restaurant_id>/delete', methods=['GET','POST'])
 def deleteRestaurant(restaurant_id):
-    #return "this page will be for deleting restaurant %s" % restaurant_id
-    return render_template('deleteRestaurant.html', restaurant = restaurant)
+    real_restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
+    if request.method == 'POST':
+        
+        oldName  =  real_restaurant.name
+
+        session.delete(real_restaurant)
+        session.commit()
+
+
+        flash("Restaurant %s deleted :'( " % oldName)
+        return redirect(url_for('showRestautans'))
+    else:
+        return render_template('deleteRestaurant.html', restaurant = real_restaurant)
 
 
 
 @app.route('/restaurant/<int:restaurant_id>')
 @app.route('/restaurant/<int:restaurant_id>/menu')
 def showMenu(restaurant_id):
-    #return "This page will show menu of restaurant %s" %restaurant_id
+    
     try: 
-        this_rest = restaurants[restaurant_id-1];
-        return render_template('menu.html', restaurant = this_rest)
+        real_restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
+        local_items = session.query(MenuItem).filter_by(restaurant_id = restaurant_id).all()
+        return render_template('menu.html', restaurant = real_restaurant, items = local_items)
     except IndexError:
         return render_template('notFound.html',itemval = restaurant_id)
 
-@app.route('/restaurant/<int:restaurant_id>/menu/new')
+@app.route('/restaurant/<int:restaurant_id>/menu/new', methods=['GET','POST'])
 def newMenuItem(restaurant_id):
-    #return "This page will create a new item for restaurant %s" % restaurant_id
-    return render_template('newMenuItem.html', restaurant = restaurant)
+    
+    real_restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
+    
+    if request.method == 'POST':
+
+        newItem = MenuItem(
+            name=request.form['name'], restaurant_id=restaurant_id)
+        session.add(newItem)
+        session.commit()
+        
+        flash('new menu item created')
+
+        return redirect(url_for('showMenu', restaurant_id = restaurant_id))
+
+    else:
+        return render_template('newMenuItem.html', restaurant = real_restaurant)
 
 
 @app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/edit')
