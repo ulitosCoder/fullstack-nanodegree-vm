@@ -120,17 +120,43 @@ def newMenuItem(restaurant_id):
         return render_template('newMenuItem.html', restaurant = real_restaurant)
 
 
-@app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/edit')
+@app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/edit', methods=['GET','POST'])
 def editMenuItem(restaurant_id,menu_id):
     real_restaurant = session.query(Restaurant).filter_by(id = restaurant_id).one()
     item = session.query(MenuItem).filter_by(id=menu_id).one()
 
-    return render_template('editMenuItem.html', restaurant = real_restaurant, item = item)
 
-@app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/delete')
+    if request.method == 'POST':
+        oldName = item.name
+
+        item.name = request.form['name']
+
+        session.add(item)
+        session.commit()
+
+        flash('new menu item name changed from %s to %s'  % (oldName, item.name) )
+
+        return redirect(url_for('showMenu', restaurant_id = restaurant_id))
+    else:
+        return render_template('editMenuItem.html', restaurant = real_restaurant, item = item)
+
+@app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/delete', methods=['GET','POST'])
 def deleteMenuItem(restaurant_id,menu_id):
-    #return "This page will delete the item  %s for restaurant %s" % (menu_id , restaurant_id)
-    return render_template('deleteMenuItem.html', restaurant = real_restaurant, item = item)
+    real_restaurant = session.query(Restaurant).filter_by(id = restaurant_id).one()
+    item = session.query(MenuItem).filter_by(id=menu_id).one()
+
+    if request.method == 'POST':
+
+        oldName = item.name
+
+        session.delete(item)
+        session.commit()
+        
+        flash('new menu item %s deleted' % oldName)
+
+        return redirect(url_for('showMenu', restaurant_id = restaurant_id))
+    else:
+        return render_template('deleteMenuItem.html', restaurant = real_restaurant, item = item)
 
 
 if __name__ == '__main__':
