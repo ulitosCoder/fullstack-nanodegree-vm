@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 from flask import Flask,render_template,redirect, url_for, request, flash
+from flask import jsonify
 from sqlalchemy import create_engine,  desc, asc, Date
 from sqlalchemy import update
 from sqlalchemy.orm import sessionmaker
@@ -32,6 +33,14 @@ session = DBSession()
 def showRestautans():
     real_restaurants = session.query(Restaurant).all()
     return render_template('restaurants.html', restaurants = real_restaurants)
+
+
+@app.route('/restaurant/JSON')
+def showRestautansJSON():
+
+    restaurants_list = session.query(Restaurant).all()
+
+    return jsonify(restaurants = [i.serialize for i in restaurants_list])
 
 @app.route('/restaurant/new', methods=['GET','POST'])
 def newRestaurant():
@@ -88,6 +97,15 @@ def deleteRestaurant(restaurant_id):
         return render_template('deleteRestaurant.html', restaurant = real_restaurant)
 
 
+@app.route('/restaurant/<int:restaurant_id>/JSON')
+@app.route('/restaurant/<int:restaurant_id>/menu/JSON')
+def showMenuJSON(restaurant_id):
+
+    real_restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
+    item_list = session.query(MenuItem).filter_by(restaurant_id=restaurant_id).all()
+
+    return jsonify(menu_items=[i.serialize for i in item_list])
+    
 
 @app.route('/restaurant/<int:restaurant_id>')
 @app.route('/restaurant/<int:restaurant_id>/menu')
@@ -119,6 +137,11 @@ def newMenuItem(restaurant_id):
     else:
         return render_template('newMenuItem.html', restaurant = real_restaurant)
 
+@app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/JSON', methods=['GET','POST'])
+def showMenuItemJSON(restaurant_id,menu_id):
+
+    item = session.query(MenuItem).filter_by(id = menu_id).one()
+    return jsonify(menu_item = [item.serialize])
 
 @app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/edit', methods=['GET','POST'])
 def editMenuItem(restaurant_id,menu_id):
@@ -151,7 +174,7 @@ def deleteMenuItem(restaurant_id,menu_id):
 
         session.delete(item)
         session.commit()
-        
+
         flash('new menu item %s deleted' % oldName)
 
         return redirect(url_for('showMenu', restaurant_id = restaurant_id))
