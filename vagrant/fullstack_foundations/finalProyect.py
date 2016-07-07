@@ -17,14 +17,18 @@ DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
 
-#Fake Restaurants
-#restaurant = {'name': 'The CRUDdy Crab', 'id': '1'}
-#restaurants = [{'name': 'The CRUDdy Crab', 'id': '1'}, {'name':'Blue Burgers', 'id':'2'},{'name':'Taco Hut', 'id':'3'}]
+from flask import session as login_session
+import random, string
 
 
-#Fake Menu Items
-#items = [ {'name':'Cheese Pizza', 'description':'made with fresh cheese', 'price':'$5.99','course' :'Entree', 'id':'1'}, {'name':'Chocolate Cake','description':'made with Dutch Chocolate', 'price':'$3.99', 'course':'Dessert','id':'2'},{'name':'Caesar Salad', 'description':'with fresh organic vegetables','price':'$5.99', 'course':'Entree','id':'3'},{'name':'Iced Tea', 'description':'with lemon','price':'$.99', 'course':'Beverage','id':'4'},{'name':'Spinach Dip', 'description':'creamy dip with fresh spinach','price':'$1.99', 'course':'Appetizer','id':'5'} ]
-#item =  {'name':'Cheese Pizza','description':'made with fresh cheese','price':'$5.99','course' :'Entree'}
+@app.route('/login')
+def showLogin():
+	state = ''.join(random.choice(string.ascii_uppercase + string.digits) 
+					for x in xrange(32))
+	login_session['state'] = state
+	#return "Teh current session state is %s" % login_session['state']
+	return render_template('login.html')
+
 
 
 
