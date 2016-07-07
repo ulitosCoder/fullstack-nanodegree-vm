@@ -6,11 +6,22 @@ from sqlalchemy import create_engine
  
 Base = declarative_base()
 
+
+class User(Base):
+    __tablename__ = 'user'
+    id          = Column(Integer, primary_key = True)
+    name        = Column(String(80), nullable = False)
+    email       = Column(String(80), nullable = True)
+    picture     = Column(String(80), nullable = True)
+
 class Restaurant(Base):
     __tablename__ = 'restaurant'
-    id = Column(Integer, primary_key = True)
-    name =Column(String(80), nullable = False)
+    id      = Column(Integer, primary_key = True)
+    name    = Column(String(80), nullable = False)
+    user_id = Column(Integer,ForeignKey('user.id'))
     
+    user            = relationship(User)
+
     @property
     def serialize(self):
         """Return object data in easily serializeable format"""
@@ -20,15 +31,17 @@ class Restaurant(Base):
         }
     
 class MenuItem(Base):
-    __tablename__ = 'menu_item'
-    id = Column(Integer, primary_key=True)
-    name = Column(String(20))
-    description = Column(String(150))
-    price = Column(String(20))
-    course = Column(String(20))
-    restaurant_id = Column(Integer,ForeignKey('restaurant.id'))
+    __tablename__   = 'menu_item'
+    id              = Column(Integer, primary_key=True)
+    name            = Column(String(20))
+    description     = Column(String(150))
+    price           = Column(String(20))
+    course          = Column(String(20))
+    restaurant_id   = Column(Integer,ForeignKey('restaurant.id'))
+    user_id         = Column(Integer,ForeignKey('user.id'))
 
-    restaurant = relationship(Restaurant)
+    restaurant      = relationship(Restaurant)
+    user            = relationship(User)
 
     @property
     def serialize(self):
@@ -43,5 +56,5 @@ class MenuItem(Base):
     
 
 
-engine = create_engine('sqlite:///restaurantmenu.db')
+engine = create_engine('sqlite:///restaurantmenuwithusers.db')
 Base.metadata.create_all(engine)
