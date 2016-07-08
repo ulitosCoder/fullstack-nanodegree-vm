@@ -129,6 +129,13 @@ def gconnect():
     login_session['picture'] = data['picture']
     login_session['email'] = data['email']
 
+    real_userID  = getUserID(login_session['email'])
+
+    if real_userID is None:
+    	real_userID = createUser(login_session)
+
+    login_session['user_id'] = real_userID
+
     output = ''
     output += '<h1>Welcome, '
     output += login_session['username']
@@ -187,13 +194,19 @@ def showLogin():
 
 @app.route('/')
 @app.route('/restaurant')
-def showRestautans():
+def showRestaurants():
     real_restaurants = session.query(Restaurant).all()
-    return render_template('restaurants.html', restaurants = real_restaurants)
+
+
+    try:
+        user_id = login_session['user_id']
+        return render_template('restaurants.html', restaurants = real_restaurants)
+    except:
+        return render_template('publicrestaurants.html', restaurants = real_restaurants)
 
 
 @app.route('/restaurant/JSON')
-def showRestautansJSON():
+def showRestaurantsJSON():
 
     restaurants_list = session.query(Restaurant).all()
 
@@ -211,7 +224,7 @@ def newRestaurant():
         session.add(newRest)
         session.commit()
         flash("new Restaurant: %s created" % newRest.name)
-        return redirect(url_for('showRestautans'))
+        return redirect(url_for('showRestaurants'))
     else:
         return render_template('newRestaurant.html')
 
@@ -236,7 +249,7 @@ def editRestaurant(restaurant_id):
             
             flash("Restaurant %s name changed to: %s " % (oldName, real_restaurant.name))
 
-            return redirect(url_for('showRestautans'))
+            return redirect(url_for('showRestaurants'))
         else:
             return render_template('editRestaurant.html', restaurant = real_restaurant)
     except:
@@ -259,7 +272,7 @@ def deleteRestaurant(restaurant_id):
 
 
         flash("Restaurant %s deleted :'( " % oldName)
-        return redirect(url_for('showRestautans'))
+        return redirect(url_for('showRestaurants'))
     else:
         return render_template('deleteRestaurant.html', restaurant = real_restaurant)
 
@@ -281,7 +294,21 @@ def showMenu(restaurant_id):
     try: 
         real_restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
         local_items = session.query(MenuItem).filter_by(restaurant_id = restaurant_id).all()
-        return render_template('menu.html', restaurant = real_restaurant, items = local_items)
+
+        creator = getUserInfo(real_restaurant.user_id)
+
+        
+        if 'username' not in login_session or creator.id != login_session['user_id']:
+            return render_template('publicmenu.html', 
+                items=local_items, 
+                restaurant=real_restaurant, 
+                creator=creator)
+        else:
+            return render_template('menu.html', 
+                items=local_items, 
+                restaurant=real_restaurant, 
+                creator=creator)
+
     except IndexError:
         return render_template('notFound.html',itemval = restaurant_id)
 
