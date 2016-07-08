@@ -5,7 +5,7 @@ from flask import jsonify
 from sqlalchemy import create_engine,  desc, asc, Date
 from sqlalchemy import update
 from sqlalchemy.orm import sessionmaker
-from database_setup import Restaurant, Base, MenuItem
+from database_setup import Restaurant, Base, MenuItem, User
 from flask import session as login_session
 import random, string
 
@@ -30,6 +30,30 @@ DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
 
+
+# User Helper Functions
+
+
+def createUser(login_session):
+    newUser = User(name=login_session['username'], email=login_session[
+                   'email'], picture=login_session['picture'])
+    session.add(newUser)
+    session.commit()
+    user = session.query(User).filter_by(email=login_session['email']).one()
+    return user.id
+
+
+def getUserInfo(user_id):
+    user = session.query(User).filter_by(id=user_id).one()
+    return user
+
+
+def getUserID(email):
+    try:
+        user = session.query(User).filter_by(email=email).one()
+        return user.id
+    except:
+        return None
 
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
@@ -182,7 +206,8 @@ def newRestaurant():
         return redirect('/login')
 
     if request.method == 'POST':
-        newRest = Restaurant(name=request.form['name'])
+        newRest = Restaurant(name=request.form['name'], 
+            user_id=login_session['user_id'])
         session.add(newRest)
         session.commit()
         flash("new Restaurant: %s created" % newRest.name)
@@ -271,7 +296,9 @@ def newMenuItem(restaurant_id):
     if request.method == 'POST':
 
         newItem = MenuItem(
-            name=request.form['name'], restaurant_id=restaurant_id)
+            name=request.form['name'], 
+            restaurant_id=restaurant_id, 
+            user_id=restaurant.user_id)
         session.add(newItem)
         session.commit()
         
@@ -316,7 +343,7 @@ def editMenuItem(restaurant_id,menu_id):
 def deleteMenuItem(restaurant_id,menu_id):
     if 'username' not in login_session:
         return redirect('/login')
-        
+
     real_restaurant = session.query(Restaurant).filter_by(id = restaurant_id).one()
     item = session.query(MenuItem).filter_by(id=menu_id).one()
 
