@@ -38,7 +38,7 @@
 function signInCallback(authResult) {
   if (authResult['code']) {
     // Hide the sign-in button now that the user is authorized
-    alert('call back begin');
+    
     $('#signinButton').attr('style', 'display: none');
     // Send the one-time-use code to the server, if the server responds, write a 'login successful' message to the web page and then redirect back to the main restaurants page
     $.ajax({
@@ -51,7 +51,6 @@ function signInCallback(authResult) {
         // Handle or verify the server response if necessary.
         if (result) {
           
-          alert('call back SUCCESS');
           
           $('#result').html('Login Successful!</br>'+ result + '</br>Redirecting...')
           
@@ -84,7 +83,7 @@ function signInCallback(authResult) {
     cookie     : true,  // enable cookies to allow the server to access 
                         // the session
     xfbml      : true,  // parse social plugins on this page
-    version    : 'v2.2' // use version 2.2
+    version    : 'v2.4' // use version 2.2??
   });
   };
 
@@ -128,16 +127,12 @@ function signInCallback(authResult) {
   }
 </script>
 
-<button>
-         
-
-          <fb:login-button scope="public_profile,email" onlogin="sendTokenToServer();">
-<a href='javascript:sendTokenToServer()'>Login with Facebook</a>
-
-</fb:login-button>
-
-
-        </button>
+<button class="btn btn-default" id="new-menu-items">
+  <span class="glyphicon glyphicon-glass" aria-hidden="true" ></span>
+  <fb:login-button scope="public_profile,email" onlogin="sendTokenToServer();">
+    <a href='javascript:sendTokenToServer()'>Login with Facebook</a>
+  </fb:login-button>
+</button>
 <!--END FACEBOOK SIGN IN -->
 
   </body>

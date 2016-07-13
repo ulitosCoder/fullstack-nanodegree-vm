@@ -122,9 +122,10 @@ def gconnect():
         return response
 
     # Store the access token in the session for later use.
+    login_session['access_token'] = access_token
     login_session['credentials'] = credentials
     login_session['gplus_id'] = gplus_id
-
+    login_session['provider'] = 'google'
     # Get user info
     userinfo_url = "https://www.googleapis.com/oauth2/v1/userinfo"
     params = {'access_token': credentials.access_token, 'alt': 'json'}
@@ -151,43 +152,9 @@ def gconnect():
     output += login_session['picture']
     output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
     flash("you are now logged in as %s" % login_session['username'])
-    print "you are now logged in as %s" % login_session['username']
+    
     print "done!"
     return output
-
-
-@app.route('/gdisconnect')
-def gdisconnect():
-    access_token = login_session['access_token']
-    print 'In gdisconnect access token is %s', access_token
-    print 'User name is: ' 
-    print login_session['username']
-    if access_token is None:
-        print 'Access Token is None'
-        response = make_response(json.dumps('Current user not connected.'), 401)
-        response.headers['Content-Type'] = 'application/json'
-        return response
-    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session['access_token']
-    h = httplib2.Http()
-    result = h.request(url, 'GET')[0]
-    print 'result is '
-    print result
-    if result['status'] == '200':
-        del login_session['access_token'] 
-        del login_session['gplus_id']
-        del login_session['username']
-        del login_session['email']
-        del login_session['picture']
-        response = make_response(json.dumps('Successfully disconnected.'), 200)
-        response.headers['Content-Type'] = 'application/json'
-        return response
-    else:
-    
-        response = make_response(json.dumps('Failed to revoke token for given user.', 400))
-        response.headers['Content-Type'] = 'application/json'
-    return response
-
-
 
 
 
@@ -256,6 +223,7 @@ def fbconnect():
     flash("Now logged in as %s" % login_session['username'])
     return output
 
+
 @app.route('/fbdisconnect')
 def fbdisconnect():
     facebook_id = login_session['facebook_id']
@@ -266,6 +234,66 @@ def fbdisconnect():
     result = h.request(url, 'DELETE')[1]
     return "you have been logged out"
     
+
+@app.route('/gdisconnect')
+def gdisconnect():
+    # Only disconnect a connected user.
+    credentials = login_session.get('credentials')
+    if credentials is None:
+        response = make_response(
+            json.dumps('Current user not connected.'), 401)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+    access_token = credentials.access_token
+    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
+    h = httplib2.Http()
+    result = h.request(url, 'GET')[0]
+   
+    if result['status'] != '200':
+        # For whatever reason, the given token was invalid.
+        print 'status not 200'
+        response = make_response(
+            json.dumps('Failed to revoke token for given user.', 400))
+        response.headers['Content-Type'] = 'application/json'
+        print response
+        print 'returning'
+        return response
+        
+
+    
+
+
+@app.route('/disconnect')
+def disconnect():
+    print 'disconnecting'
+    if 'provider' in login_session:
+        print 'provider exist'
+        if login_session['provider'] == 'google':
+            print 'provider google'
+            gdisconnect()
+            print 'returned from gdisconnect'
+            del login_session['gplus_id']
+            del login_session['credentials']
+
+        if login_session['provider'] == 'facebook':
+            print 'provider facebook'
+            fbdisconnect()
+            del login_session['facebook_id']
+
+        print 'clearing session info'
+        del login_session['username']
+        del login_session['email']
+        del login_session['picture']
+        del login_session['provider']
+
+        print 'flashing'
+        flash('you have been succesfully logged out!')
+
+        print 'redirecting'
+        return redirect(url_for('showRestaurants'))
+    else:
+        flash('you were not logged in to begin with')
+        return redirect(url_for('showRestaurants'))
 
 @app.route('/')
 @app.route('/restaurant')
@@ -400,7 +428,7 @@ def newMenuItem(restaurant_id):
         newItem = MenuItem(
             name=request.form['name'], 
             restaurant_id=restaurant_id, 
-            user_id=restaurant.user_id)
+            user_id=real_restaurant.user_id)
         session.add(newItem)
         session.commit()
         
