@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Item Catalog - Udacity - WDFS</title>
+</head>
+<body>
+
+<h1>Categories List</h1>
+
+<br/>
+
+<a href="{{url_for('newCategory')}}"> Add new </a>
+
+<!--MESSAGE FLASHING EXAMPLE -->
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+
+<ul>
+{% for message in messages %}
+  <li>{{message}}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
+
+<br/>
+
+{% for i in categories %}
+<div>
+    <a href="{{url_for('showCategoryList',category_name = i.name)}}">{{i.name}}</a><br/>
+    <a href="{{url_for('editCategory',category_name = i.name)}}">Edit</a>{% print '|'%}
+    <a href="{{url_for('deleteCategory',category_name = i.name)}}">Delete</a>
+</div>
+<br/>
+
+{% endfor %}
+
+</body>
+</html>
