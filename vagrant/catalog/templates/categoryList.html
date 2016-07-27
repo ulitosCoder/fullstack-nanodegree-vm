@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Category list</title>
+</head>
+<body>
+
+Item list for category:  {{category.name}}
+<!--MESSAGE FLASHING EXAMPLE -->
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+
+<ul>
+{% for message in messages %}
+  <li>{{message}}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
+
+</body>
+</html>

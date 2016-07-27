@@ -1,5 +1,6 @@
 import sys
-from sqlalchemy import Column, ForeignKey, Integer, String, Date, Numeric, DateTime
+from sqlalchemy import Column, ForeignKey, Integer, String, Date
+from sqlalchemy import Numeric, DateTime, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -37,6 +38,7 @@ class CategoryItem(Base):
     id              = Column(Integer, primary_key = True)
     name            = Column(String(80), nullable = False)
     date_added      = Column(DateTime, default=func.now())
+    description     = Column(Text)
     category_id     = Column(Integer, ForeignKey('user.id'))
     user_id         = Column(Integer,ForeignKey('category.id'))
     

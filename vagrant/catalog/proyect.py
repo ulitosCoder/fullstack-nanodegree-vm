@@ -88,7 +88,7 @@ def editCategory(category_name):
         if request.form['name']:
             localCategory.name = request.form['name']
             session.add(localCategory)
-            session.commit
+            session.commit()
 
             flash("category %s changed to %s" % (oldName, localCategory.name))
             return redirect(url_for('showCategory'))
@@ -128,7 +128,16 @@ def showMenuJSON(category_name):
 @app.route('/category/<string:category_name>')
 @app.route('/category/<string:category_name>/list')
 def showCategoryList(category_name):
-    return "This page will show category list for %s" % category_name
+
+    localCategory = session.query(Category).filter_by(name=category_name).one()
+    local_items = session.query(CategoryItem).filter_by(
+        category_id=localCategory.id).all()
+    localCreator = session.query(User).filter_by(id=localCategory.user_id).one()
+
+    return render_template('categoryList.html', 
+                items=local_items, 
+                category=localCategory, 
+                creator=localCreator)
 
 @app.route('/category/<string:category_name>/list/new')
 def newCategoryItem(category_name):
