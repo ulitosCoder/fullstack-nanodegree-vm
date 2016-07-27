@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>New Category</title>
+</head>
+<body>
+
+<div>
+    Enter new category
+</div>
+
+<div>
+    <form method="POST" action="{{url_for('newCategory')}}">
+        <input type="text" name="name" size="30">
+        <input type="submit" name="Create">
+    </form>
+</div>
+
+<br/>
+<div>
+    <a href="{{url_for('showCategory')}}"> back to main </a>
+</div>
+
+</body>
+</html>

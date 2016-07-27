@@ -67,7 +67,14 @@ def showCategoryJSON():
 @app.route('/category/new', methods=['GET','POST'])
 def newCategory():
 
-    return "this page will be for making a new category"
+    if request.method == 'POST':
+        newCatego = Category(name=request.form['name'],user_id=1)
+        session.add( newCatego )
+        session.commit()
+        flash("new category %s created" % newCatego.name)
+        return redirect(url_for('showCategory'))
+    else:
+        return render_template('newCatego.html')
     
 
 
