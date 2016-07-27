@@ -81,8 +81,23 @@ def newCategory():
 @app.route('/category/<string:category_name>/edit', methods=['GET','POST'])
 def editCategory(category_name):
     
-    return "This page is for editing an existing category: %s" % category_name
+    localCategory = session.query(Category).filter_by(name=category_name).one()
+    if request.method == 'POST':
+        oldName = localCategory.name
 
+        if request.form['name']:
+            localCategory.name = request.form['name']
+            session.add(localCategory)
+            session.commit
+
+            flash("category %s changed to %s" % (oldName, localCategory.name))
+            return redirect(url_for('showCategory'))
+        else:
+            flash("use another name")
+            return render_template('editCatego.html',category = localCategory)
+
+    else:
+        return render_template('editCatego.html',category = localCategory)
 
 
 @app.route('/category/<string:category_name>/delete', methods=['GET','POST'])
