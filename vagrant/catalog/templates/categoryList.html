@@ -18,5 +18,24 @@ Item list for category:  {{category.name}}
 {% endif %}
 {% endwith %}
 
+
+<div>
+    <a href="{{url_for('newCategoryItem',category_name=category.name)}}">Add new item</a>
+</div>
+
+{% for i in items %}
+
+<div>
+    <p>{{i.name}}</p>
+    <p>{{i.description}}</p>
+</div>
+<br/>
+{% endfor %}
+
+<br/>
+<div>
+    <a href="{{url_for('showCategory')}}"> Back to main </a>
+</div>
+
 </body>
 </html>

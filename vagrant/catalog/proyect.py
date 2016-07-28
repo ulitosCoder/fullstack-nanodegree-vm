@@ -139,9 +139,32 @@ def showCategoryList(category_name):
                 category=localCategory, 
                 creator=localCreator)
 
-@app.route('/category/<string:category_name>/list/new')
+@app.route('/category/<string:category_name>/list/new', methods=['GET','POST'])
 def newCategoryItem(category_name):
-    return "This page is for creating a new category item for %s" % category_name
+    localCategory = session.query(Category).filter_by(name=category_name).one()
+    #TODO check if the logged in user i the cretor
+    current_user_id = localCategory.user_id
+    localCreator = session.query(User).filter_by(id=localCategory.user_id).one()
+    if request.method == 'POST':
+
+        if request.form['name']:
+            newItem = CategoryItem(
+                name = request.form['name'],
+                description = request.form['descript'],
+                category_id = localCategory.id,
+                user_id = current_user_id
+                )
+
+            session.add(newItem)
+            session.commit()
+            flash('new item %s added' % newItem.name)
+        else:
+            flash('bad data used')
+
+        return redirect(url_for('showCategoryList',
+            category_name=localCategory.name))
+    else:
+        return render_template('newCategoItem.html',category=localCategory)
 
 @app.route('/category/<string:category_name>/list/<string:item_name>/edit')
 def editCategoryItem(category_name,item_name):

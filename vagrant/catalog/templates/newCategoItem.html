@@ -1,0 +1,38 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>New Item</title>
+</head>
+<body>
+
+<div>
+    Enter new item
+</div>
+
+<div>
+    <form method="POST" action="{{url_for('newCategoryItem',category_name=category.name)}}">
+
+    <table>
+        <tr>
+          <td>Name: </td>
+          <td><input type="text" name="name" size="30"></td>
+        </tr>
+        <tr>
+            <td>Decription: </td>
+            <td><textarea  name="descript" size="300">Write description here</textarea></td>
+        </tr>
+        <tr>
+            <td><input type="submit" name="Create"></td>
+        </tr>
+    </table>
+    </form>
+</div>
+
+<br/>
+<div>
+    <a href="{{url_for('showCategoryList',category_name=category.name)}}"> back to category </a>
+</div>
+
+</body>
+</html>
