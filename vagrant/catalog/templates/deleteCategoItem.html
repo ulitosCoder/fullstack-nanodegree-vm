@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>New Category</title>
+</head>
+<body>
+
+<div>
+   <h1> Are you sure you want to delete item:  {{item.name}}?  </h1>
+</div>
+
+<div>
+    <form method="POST" action="{{url_for('deleteCategoryItem',category_name=category.name,item_name=item.name)}}">
+        <input type="submit" name="delete" value="Delete">
+    </form>
+</div>
+
+<br/>
+<div>
+    <a href="{{url_for('showCategoryList',category_name=category.name)}}"> Don't delete, back to list </a>
+</div>
+
+</body>
+</html>

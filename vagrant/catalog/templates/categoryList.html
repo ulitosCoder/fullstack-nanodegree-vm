@@ -28,6 +28,12 @@ Item list for category:  {{category.name}}
 <div>
     <p>{{i.name}}</p>
     <p>{{i.description}}</p>
+    <div>
+    <a href="{{url_for('editCategoryItem',category_name=category.name,item_name=i.name)}}">Edit</a>{% print '|'%}
+    <a href="{{url_for('deleteCategoryItem',category_name=category.name,item_name = i.name)}}">Delete</a>
+    </div>
+    <br/>
+
 </div>
 <br/>
 {% endfor %}

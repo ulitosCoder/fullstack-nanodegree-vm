@@ -171,10 +171,28 @@ def editCategoryItem(category_name,item_name):
     return "This page is for editing item: %s, of category %s" % ( 
         item_name, category_name)
 
-@app.route('/category/<string:category_name>/list/<string:item_name>/delete')
+@app.route('/category/<string:category_name>/list/<string:item_name>/delete',
+    methods=['GET','POST'])
 def deleteCategoryItem(category_name,item_name):
-    return "This page is for deleting item: %s, of category %s" % ( 
-        item_name, category_name)
+    localCategory = session.query(Category).filter_by(name=category_name).one()
+    localItem = session.query(CategoryItem).filter_by(
+        category_id=localCategory.id).filter_by(name=item_name).one()
+    #TODO check if the logged in user i the cretor
+    current_user_id = localCategory.user_id
+    localCreator = session.query(User).filter_by(id=localCategory.user_id).one()
+
+    if request.method == 'POST':
+        session.delete(localItem)
+        session.commit()        
+
+        flash('Item %s deleted' % item_name)
+        
+        return redirect(url_for('showCategoryList',
+            category_name=localCategory.name))
+    else:
+        return render_template('deleteCategoItem.html',
+            category=localCategory,
+            item=localItem)
 
 if __name__ == '__main__':
     app.debug = True
