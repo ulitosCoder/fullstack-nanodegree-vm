@@ -166,10 +166,47 @@ def newCategoryItem(category_name):
     else:
         return render_template('newCategoItem.html',category=localCategory)
 
-@app.route('/category/<string:category_name>/list/<string:item_name>/edit')
+@app.route('/category/<string:category_name>/list/<string:item_name>/edit',
+    methods=['GET','POST'])
 def editCategoryItem(category_name,item_name):
-    return "This page is for editing item: %s, of category %s" % ( 
-        item_name, category_name)
+
+    localCategory = session.query(Category).filter_by(name=category_name).one()
+    localItem = session.query(CategoryItem).filter_by(
+        category_id=localCategory.id).filter_by(name=item_name).one()
+    #TODO check if the logged in user i the cretor
+    current_user_id = localCategory.user_id
+    localCreator = session.query(User).filter_by(id=localCategory.user_id).one()
+
+    print localItem.name
+
+    if request.method == 'POST':
+        change = False
+        oldName = localItem.name
+        if request.form['name'] and request.form['name'] != oldName:
+            localItem.name = request.form['name']
+            change = True
+
+        oldDesc = localItem.description
+        if request.form['descript'] and request.form['descript'] != localItem.description:
+            localItem.description = request.form['descript'] 
+            change = True
+
+
+        if change:
+            session.add(localItem)
+            session.commit()
+            flash('item %s, changed' % localItem.name)
+        else:
+            flash('No change made')
+
+        
+        return redirect(url_for('showCategoryList',
+            category_name=localCategory.name))
+    else:
+        localItem.name
+        return render_template('editCategoItem.html',
+            category=localCategory,
+            item=localItem)
 
 @app.route('/category/<string:category_name>/list/<string:item_name>/delete',
     methods=['GET','POST'])
