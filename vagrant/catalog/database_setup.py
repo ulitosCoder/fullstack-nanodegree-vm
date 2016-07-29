@@ -39,8 +39,8 @@ class CategoryItem(Base):
     name            = Column(String(80), nullable = False)
     date_added      = Column(DateTime, default=func.now())
     description     = Column(Text)
-    category_id     = Column(Integer, ForeignKey('user.id'))
-    user_id         = Column(Integer,ForeignKey('category.id'))
+    category_id     = Column(Integer, ForeignKey('category.id'))
+    user_id         = Column(Integer,ForeignKey('user.id'))
     
     category        = relationship(Category)
     user            = relationship(User)

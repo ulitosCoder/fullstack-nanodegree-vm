@@ -42,11 +42,14 @@ def showLogin():
 @app.route('/')
 @app.route('/category')
 def showCategory():
-    
     try:
-        local_categories = session.query(Category).all()    
-        
-        return render_template('catalog.html',categories = local_categories)
+        local_categories = session.query(Category).all() 
+        latestItems = session.query(CategoryItem).join(CategoryItem.category).order_by(
+             desc(CategoryItem.date_added)).all()
+
+        return render_template('catalog.html',
+            categories = local_categories,
+            latest=latestItems)
     except Exception, e:
         return e.args 
     

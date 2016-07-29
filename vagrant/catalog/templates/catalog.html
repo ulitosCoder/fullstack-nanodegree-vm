@@ -26,15 +26,30 @@
 
 <br/>
 
-{% for i in categories %}
-<div>
-    <a href="{{url_for('showCategoryList',category_name = i.name)}}">{{i.name}}</a><br/>
-    <a href="{{url_for('editCategory',category_name = i.name)}}">Edit</a>{% print '|'%}
-    <a href="{{url_for('deleteCategory',category_name = i.name)}}">Delete</a>
-</div>
-<br/>
+<div><table style="border:2px solid black">
+    <tr>
+        <td style="border:2px solid black">
+        {% for i in categories %}
+        <div>
+            <a href="{{url_for('showCategoryList',category_name = i.name)}}">{{i.name}}</a><br/>
+            <a href="{{url_for('editCategory',category_name = i.name)}}">Edit</a>{% print '|'%}
+            <a href="{{url_for('deleteCategory',category_name = i.name)}}">Delete</a>
+        </div>
+        <br/>
+        {% endfor %}
+        </td>
+        <td>
+            
+        </td>
+        <td style="border:2px solid black">
+            {% for i in latest %}
+                <div>{{i.name}}</div><div>({{i.category.name}})</div><br/>
 
-{% endfor %}
+            {% endfor %}
+        </td>
+    </tr>
+
+</table></div>
 
 </body>
 </html>
