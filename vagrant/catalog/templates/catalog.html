@@ -43,8 +43,12 @@
         </td>
         <td style="border:2px solid black">
             {% for i in latest %}
-                <div>{{i.name}}</div><div>({{i.category.name}})</div><br/>
-
+                <div><table>
+                    <tr>
+                    <td>{{i.name}}</td><td>({{i.category.name}})</td>
+                    </tr>
+                </table></div>
+                <br/>
             {% endfor %}
         </td>
     </tr>

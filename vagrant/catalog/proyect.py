@@ -44,12 +44,22 @@ def showLogin():
 def showCategory():
     try:
         local_categories = session.query(Category).all() 
-        latestItems = session.query(CategoryItem).join(CategoryItem.category).order_by(
-             desc(CategoryItem.date_added)).all()
+        latestItems = session.query(CategoryItem).join(CategoryItem.category
+            ).order_by(desc(CategoryItem.date_added)).limit(10).all()
+
+        localUser = None
+        try:
+            user_id = login_session['user_id']
+            localUser = session.query(User).filter_by(id=user_id)
+        except:
+            user_id = 0
+
 
         return render_template('catalog.html',
             categories = local_categories,
-            latest=latestItems)
+            latest=latestItems,
+            user=localUser)
+
     except Exception, e:
         return e.args 
     
@@ -61,11 +71,10 @@ def showCategory():
 
 @app.route('/category/JSON')
 def showCategoryJSON():
+    
+    local_categories = session.query(Category).all() 
 
-    return "JSON catalog"
-    #restaurants_list = session.query(Restaurant).all()
-
-    #return jsonify(restaurants = [i.serialize for i in restaurants_list])
+    return jsonify(categories = [i.serialize for i in local_categories])
 
 @app.route('/category/new', methods=['GET','POST'])
 def newCategory():
@@ -125,7 +134,13 @@ def deleteCategory(category_name):
 @app.route('/category/<string:category_name>/JSON')
 def showMenuJSON(category_name):
 
-    return "This pages return JSON of a single category %s" % category_name
+    try:
+        localCategory = session.query(Category).filter_by(name=category_name).one() 
+
+        return jsonify(localCategory.serialize)
+    except Exception, e:
+        return 'Not found'
+    
     
 
 @app.route('/category/<string:category_name>')
