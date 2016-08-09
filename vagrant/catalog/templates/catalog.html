@@ -5,7 +5,22 @@
 </head>
 <body>
 
-<h1>Categories List</h1>
+<div>
+<table>
+    <tr>
+        <td><h1>Categories List</h1></td>
+        <td>-</td>
+        <td>
+        {%if user%}
+            <div>{{user.name}}</div>
+        {%else%}
+            <div><a href="{{url_for('showLogin')}}"> Login </a></div>
+        {%endif%}
+        </td>
+    </tr>
+</table>
+</div>
+
 
 <br/>
 
@@ -32,8 +47,10 @@
         {% for i in categories %}
         <div>
             <a href="{{url_for('showCategoryList',category_name = i.name)}}">{{i.name}}</a><br/>
+            {%if user and i.user_id == user.id%}
             <a href="{{url_for('editCategory',category_name = i.name)}}">Edit</a>{% print '|'%}
             <a href="{{url_for('deleteCategory',category_name = i.name)}}">Delete</a>
+            {%endif%}
         </div>
         <br/>
         {% endfor %}

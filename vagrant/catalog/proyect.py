@@ -47,7 +47,7 @@ def showCategory():
         latestItems = session.query(CategoryItem).join(CategoryItem.category
             ).order_by(desc(CategoryItem.date_added)).limit(10).all()
 
-        localUser = None
+        localUser = session.query(User).filter_by(id=2).one()
         try:
             user_id = login_session['user_id']
             localUser = session.query(User).filter_by(id=user_id)
