@@ -37,6 +37,12 @@ APPLICATION_NAME = "Item Catalog"
 
 
 def createUser(login_session):
+    """ Creates a new user in the database
+
+    Args:
+        login_session: The dictionary that contains the data of th new user,
+            the data is taken from the the authetication system
+    """
     newUser = User(name=login_session['username'], email=login_session[
                    'email'], picture=login_session['picture'])
     session.add(newUser)
@@ -46,7 +52,10 @@ def createUser(login_session):
 
 
 def getUserInfo(user_id):
-
+    """ Get the info of a user from the database
+        Args: 
+            user_id: user id
+    """
     try:
         user = session.query(User).filter_by(id=user_id).one()
         return user    
@@ -54,8 +63,12 @@ def getUserInfo(user_id):
         return None
     
 
-
 def getUserID(email):
+    """ Get the user id of a given email address
+
+        Args:
+            email: email addres of the user to look for
+    """
     try:
         user = session.query(User).filter_by(email=email).one()
         return user.id
@@ -64,6 +77,11 @@ def getUserID(email):
 
 @app.route('/login')
 def showLogin():
+    """ Shows login page
+
+        This route creates a one time token for protection and shows the
+        login page to ask the user for credentials 
+    """
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
                     for x in xrange(32))
     login_session['state'] = state
@@ -199,7 +217,7 @@ def gdisconnect():
 @app.route('/disconnect')
 def disconnect():
     print 'disconnecting'
-    
+
     if 'provider' in login_session:
         print 'provider exist'
         if login_session['provider'] == 'google':
