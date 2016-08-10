@@ -24,7 +24,13 @@
 
 <br/>
 
-<a href="{{url_for('newCategory')}}"> Add new </a>
+
+{%if user%}
+    <a href="{{url_for('newCategory')}}"> Add new </a>
+{%endif%}
+
+
+
 <br/>
 
 <!--MESSAGE FLASHING EXAMPLE -->
