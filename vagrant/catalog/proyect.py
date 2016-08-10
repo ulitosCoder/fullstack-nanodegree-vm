@@ -168,6 +168,70 @@ def gconnect():
     return output
 
 
+@app.route('/gdisconnect')
+def gdisconnect():
+    # Only disconnect a connected user.
+    credentials = login_session.get('credentials')
+    if credentials is None:
+        response = make_response(
+            json.dumps('Current user not connected.'), 401)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+    access_token = credentials.access_token
+    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
+    h = httplib2.Http()
+    result = h.request(url, 'GET')[0]
+   
+    if result['status'] != '200':
+        # For whatever reason, the given token was invalid.
+        print 'status not 200'
+        response = make_response(
+            json.dumps('Failed to revoke token for given user.', 400))
+        response.headers['Content-Type'] = 'application/json'
+        print response
+        print 'returning'
+        return response
+        
+
+    
+
+
+@app.route('/disconnect')
+def disconnect():
+    print 'disconnecting'
+    
+    if 'provider' in login_session:
+        print 'provider exist'
+        if login_session['provider'] == 'google':
+            print 'provider google'
+            gdisconnect()
+            print 'returned from gdisconnect'
+            del login_session['gplus_id']
+            del login_session['credentials']
+
+        if login_session['provider'] == 'facebook':
+            print 'provider facebook'
+            fbdisconnect()
+            del login_session['facebook_id']
+
+        print 'clearing session info'
+
+        del login_session['username']
+        del login_session['email']
+        del login_session['picture']
+        del login_session['provider']
+        del login_session['user_id']
+
+        print 'flashing'
+        flash('you have been succesfully logged out!')
+
+        print 'redirecting'
+        return redirect(url_for('showCategory'))
+    else:
+        flash('you were not logged in to begin with')
+        return redirect(url_for('showCategory'))
+ 
+
 
 @app.route('/')
 @app.route('/catalog')
@@ -309,7 +373,9 @@ def showCategoryList(category_name):
         local_items = session.query(CategoryItem).filter_by(
             category_id=localCategory.id).all()
 
-        localUser = session.query(User).filter_by(id=2).one()
+        user_id = login_session['user_id']
+
+        localUser = session.query(User).filter_by(id=user_id).one()
 
         return render_template('categoryList.html', 
                 items=local_items, 
