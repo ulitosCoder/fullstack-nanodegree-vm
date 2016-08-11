@@ -25,10 +25,13 @@ Item list for category:  {{category.name}}
 </div>
 {%endif%}
 
+<br/>
+
 {% for i in items %}
 
 <div>
-    <p>{{i.name}}</p>
+    <a href="{{url_for('showCategoryItem',category_name=category.name,item_name=i.name)}}">{{i.name}}</a>
+    
     <p>{{i.description}}</p>
 
     {%if user and i.user_id == user.id%}

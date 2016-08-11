@@ -302,10 +302,9 @@ def showCategory():
 
     
     
-
-
-@app.route('/catalog/JSON')
-def showCategoryJSON():
+@app.route('/catalog.json')
+@app.route('/catalog/json')
+def showCatalogJSON():
     """ Returns a JSON string of the categories
 
         Retusr a JSON string that contains all the categories in the database
@@ -353,7 +352,9 @@ def editCategory(category_name):
         to reach here a user session needs to be active,
         in the category list, only those coteagories created by the current
         user display the edit link.
-        
+       
+        Args:
+            category_name: name of the category to edit
     """
 
     localUser = None
@@ -390,6 +391,9 @@ def deleteCategory(category_name):
         This route deletes the category named category_name,
         A user session need to be active, only those coteagories created by 
         the current user display the delete link.
+
+        Args:
+            category_name: name of the category to delete
     """
     localUser = None
     try:
@@ -416,8 +420,12 @@ def deleteCategory(category_name):
 
 
 @app.route('/catalog/<string:category_name>/JSON')
-def showMenuJSON(category_name):
+def showCategoryJSON(category_name):
+    """ Retursn a JSON string of a given category
 
+        Args:
+            category_name: name of the category to look for
+    """
     try:
         localCategory = session.query(Category).filter_by(name=category_name).one() 
 
@@ -429,8 +437,18 @@ def showMenuJSON(category_name):
 
 @app.route('/catalog/<string:category_name>')
 @app.route('/catalog/<string:category_name>/list')
+@app.route('/catalog/<string:category_name>/items')
 def showCategoryList(category_name):
+    """ Display the items list of a category
 
+        Renders the web page of a given category, if there's a valid session and
+        the current user is the owner of this category, the paga will display
+        options to add/edit/delete items for this category.
+
+        Args:
+            category_name: name of the category to look for
+
+    """
     try:
     
         localCategory = session.query(Category).filter_by(name=category_name).one()
@@ -453,22 +471,52 @@ def showCategoryList(category_name):
         return redirect(url_for('showCategory'))
 
     
-
-@app.route('/catalog/<string:category_name>/list/new', methods=['GET','POST'])
-def newCategoryItem(category_name):
+@app.route('/catalog/<string:category_name>/<string:item_name>')
+def showCategoryItem(category_name,item_name):
 
     localUser = None
     try:
-        user_id = login_session['user_id']
-        localUser = session.query(User).filter_by(id=user_id).one()
+        current_user_id = login_session['user_id']
+        localUser = session.query(User).filter_by(id=current_user_id).one()
+    except Exception, e:
+        localUser = None
+
+    localCategory = session.query(Category).filter_by(name=category_name).one()
+    localItem = session.query(CategoryItem).filter_by(
+              category_id=localCategory.id).filter_by(name=item_name).one()
+
+    return render_template('showItem.html',
+        category=localCategory,
+        item=localItem,
+        user=localUser)
+
+
+@app.route('/catalog/<string:category_name>/list/new', methods=['GET','POST'])
+def newCategoryItem(category_name):
+    """ Creates a new item
+        
+        Add a new item in the database, linked to a category and to a user.
+        A valid session need to be active, only the user who owns this category
+        can add new items to it.
+
+        Args:
+            category_name: name of the category for the new item
+    """
+    current_user_id = None
+    localUser = None
+    try:
+        current_user_id = login_session['user_id']
+        localUser = session.query(User).filter_by(id=current_user_id).one()
     except Exception, e:
         flash("You must log in first")
         return redirect(url_for('showCategoryList',category_name=category_name))
 
     localCategory = session.query(Category).filter_by(name=category_name).one()
-    #TODO: user user from sesion
-    current_user_id = localCategory.user_id
-    
+
+    if localCategory.user_id != localUser.id:
+        flash('Only the owner can modify this list')
+        return redirect(url_for('showCategoryList',
+            category_name=localCategory.name))        
 
     if request.method == 'POST':
 
@@ -494,11 +542,21 @@ def newCategoryItem(category_name):
 @app.route('/catalog/<string:category_name>/list/<string:item_name>/edit',
     methods=['GET','POST'])
 def editCategoryItem(category_name,item_name):
+    """ Modifies an existing item
+        
+        Changes some values of an item in the database.
+        A valid session need to be active, only the user who owns this category
+        can make modifications to the items
+
+        Args:
+            category_name: name of the category which the items belongs
+            item_name: name of the item to modify
+    """
 
     localUser = None
     try:
-        user_id = login_session['user_id']
-        localUser = session.query(User).filter_by(id=user_id).one()
+        current_user_id = login_session['user_id']
+        localUser = session.query(User).filter_by(id=current_user_id).one()
     except Exception, e:
         flash("You must log in first")
         return redirect(url_for('showCategoryList',category_name=category_name))
@@ -506,9 +564,11 @@ def editCategoryItem(category_name,item_name):
     localCategory = session.query(Category).filter_by(name=category_name).one()
     localItem = session.query(CategoryItem).filter_by(
         category_id=localCategory.id).filter_by(name=item_name).one()
-    #TODO check if the logged in user i the cretor
-    current_user_id = localCategory.user_id
-    localCreator = session.query(User).filter_by(id=localCategory.user_id).one()
+
+    if localCategory.user_id != localUser.id:
+        flash('Only the owner can modify this list')
+        return redirect(url_for('showCategoryList',
+            category_name=localCategory.name))  
 
     print localItem.name
 
@@ -544,6 +604,16 @@ def editCategoryItem(category_name,item_name):
 @app.route('/catalog/<string:category_name>/list/<string:item_name>/delete',
     methods=['GET','POST'])
 def deleteCategoryItem(category_name,item_name):
+    """ Deletes an existing item
+        
+        Removes an item from the database.
+        A valid session need to be active, only the user who owns this category
+        can delete  the items
+
+        Args:
+            category_name: name of the category which the items belongs
+            item_name: name of the item to delete
+    """
 
     localUser = None
     try:

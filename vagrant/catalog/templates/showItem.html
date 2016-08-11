@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Category list</title>
+</head>
+<body>
+
+Item:  {{item.name}}
+<!--MESSAGE FLASHING EXAMPLE -->
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+
+<ul>
+{% for message in messages %}
+  <li>{{message}}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
+
+
+<div>
+<table>
+    <tr>
+        <td style="border:2px solid black">{{item.description}}</td>
+    </tr>
+</table>
+    
+</div>
+
+{%if user and item.user_id == user.id%}
+<div>
+    <a href="{{url_for('editCategoryItem',category_name=category.name,item_name=item.name)}}">Edit item</a>
+</div>
+{%endif%}
+
+
+
+<br/>
+
+<div>
+    <a href="{{url_for('showCategoryList',category_name=category.name)}}"> back to category </a>
+</div>
+
+</body>
+</html>
