@@ -92,8 +92,13 @@ def showLogin():
 
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
-    # Validate state token
-    print 'begin gconn', request.args.get('state'), '---' , login_session['state']
+    """ Authenticates a User using Google+ API
+
+           This routes gets the POST request params, autheticates a user and
+        creates the session variables used for the user, then the user can
+        create, delete and edit items, but only items created by the user
+    """
+    
 
     if request.args.get('state') != login_session['state']:
         response = make_response(json.dumps('Invalid state parameter.'), 401)
@@ -188,7 +193,11 @@ def gconnect():
 
 @app.route('/gdisconnect')
 def gdisconnect():
-    # Only disconnect a connected user.
+    """ Disconnectos from a Google+ account
+
+        Use the session token to revoke the permissions, effectively login out
+        the current user
+    """
     credentials = login_session.get('credentials')
     if credentials is None:
         response = make_response(
@@ -216,7 +225,12 @@ def gdisconnect():
 
 @app.route('/disconnect')
 def disconnect():
-    print 'disconnecting'
+    """ Terminates a User session
+
+        Deletes the variables of the login_session, so the session itself is no
+        longer valid, in other words terminates the usser session
+
+    """
 
     if 'provider' in login_session:
         print 'provider exist'
@@ -254,6 +268,13 @@ def disconnect():
 @app.route('/')
 @app.route('/catalog')
 def showCategory():
+    """ Displays the main catalog
+
+        Prints the list of categories contained in the database, if user session
+        is active, the user can create new categories, for those categories
+        created by the current user, he/she can delete or edit such categories,
+        and create, edit, delete items inside the user's categories.
+    """
     try:
         local_categories = session.query(Category).all() 
         latestItems = session.query(CategoryItem).join(CategoryItem.category
@@ -285,14 +306,25 @@ def showCategory():
 
 @app.route('/catalog/JSON')
 def showCategoryJSON():
-    
+    """ Returns a JSON string of the categories
+
+        Retusr a JSON string that contains all the categories in the database
+    """
     local_categories = session.query(Category).all() 
 
     return jsonify(categories = [i.serialize for i in local_categories])
 
 @app.route('/catalog/new', methods=['GET','POST'])
 def newCategory():
+    """ Creates a new category
 
+        This route handles the creatin of a new catgory in the data base,
+        first renders the web form to ask for a name, the use that infor
+        to add the new category.
+
+        A user session needs to be active or this function won't create a new
+        category
+    """
     localUser = None
     try:
         user_id = login_session['user_id']
@@ -314,6 +346,15 @@ def newCategory():
 
 @app.route('/catalog/<string:category_name>/edit', methods=['GET','POST'])
 def editCategory(category_name):
+
+    """ Edits an existen category
+
+        This route modifies the category named in category_name, 
+        to reach here a user session needs to be active,
+        in the category list, only those coteagories created by the current
+        user display the edit link.
+        
+    """
 
     localUser = None
     try:
@@ -344,7 +385,12 @@ def editCategory(category_name):
 
 @app.route('/catalog/<string:category_name>/delete', methods=['GET','POST'])
 def deleteCategory(category_name):
-    
+    """ Deletes a category
+
+        This route deletes the category named category_name,
+        A user session need to be active, only those coteagories created by 
+        the current user display the delete link.
+    """
     localUser = None
     try:
         user_id = login_session['user_id']
