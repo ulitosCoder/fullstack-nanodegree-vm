@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from flask import Flask,render_template,redirect, url_for, request, flash
+from flask import Flask, render_template, redirect, url_for, request, flash
 from flask import jsonify
 from flask import make_response
 from flask import session as login_session
@@ -13,7 +13,8 @@ from sqlalchemy import update
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
 
-import random, string
+import random
+import string
 
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import FlowExchangeError
@@ -53,15 +54,15 @@ def createUser(login_session):
 
 def getUserInfo(user_id):
     """ Get the info of a user from the database
-        Args: 
+        Args:
             user_id: user id
     """
     try:
         user = session.query(User).filter_by(id=user_id).one()
-        return user    
+        return user
     except:
         return None
-    
+
 
 def getUserID(email):
     """ Get the user id of a given email address
@@ -75,12 +76,13 @@ def getUserID(email):
     except:
         return None
 
+
 @app.route('/login')
 def showLogin():
     """ Shows login page
 
         This route creates a one time token for protection and shows the
-        login page to ask the user for credentials 
+        login page to ask the user for credentials
     """
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
                     for x in xrange(32))
@@ -98,7 +100,6 @@ def gconnect():
         creates the session variables used for the user, then the user can
         create, delete and edit items, but only items created by the user
     """
-    
 
     if request.args.get('state') != login_session['state']:
         response = make_response(json.dumps('Invalid state parameter.'), 401)
@@ -150,8 +151,9 @@ def gconnect():
     stored_credentials = login_session.get('credentials')
     stored_gplus_id = login_session.get('gplus_id')
     if stored_credentials is not None and gplus_id == stored_gplus_id:
-        response = make_response(json.dumps('Current user is already connected.'),
-                                 200)
+        response = make_response(
+            json.dumps('Current user is already connected.'),
+            200)
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -171,7 +173,7 @@ def gconnect():
     login_session['picture'] = data['picture']
     login_session['email'] = data['email']
 
-    real_userID  = getUserID(login_session['email'])
+    real_userID = getUserID(login_session['email'])
 
     if real_userID is None:
         real_userID = createUser(login_session)
@@ -184,9 +186,11 @@ def gconnect():
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;'
+    output += '-webkit-border-radius: 150px;'
+    output += '-moz-border-radius: 150px;">'
     flash("you are now logged in as %s" % login_session['username'])
-    
+
     print "done!"
     return output
 
@@ -208,7 +212,7 @@ def gdisconnect():
     url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
-   
+
     if result['status'] != '200':
         # For whatever reason, the given token was invalid.
         print 'status not 200'
@@ -218,9 +222,6 @@ def gdisconnect():
         print response
         print 'returning'
         return response
-        
-
-    
 
 
 @app.route('/disconnect')
@@ -262,7 +263,6 @@ def disconnect():
     else:
         flash('you were not logged in to begin with')
         return redirect(url_for('showCategory'))
- 
 
 
 @app.route('/')
@@ -270,16 +270,20 @@ def disconnect():
 def showCategory():
     """ Displays the main catalog
 
-        Prints the list of categories contained in the database, if user session
-        is active, the user can create new categories, for those categories
-        created by the current user, he/she can delete or edit such categories,
-        and create, edit, delete items inside the user's categories.
+        Prints the list of categories contained in the database, if user
+        session is active, the user can create new categories, for those
+        categories created by the current user, he/she can delete or edit such
+        categories. And create, edit, delete items inside the user's
+        categories.
     """
     try:
-        local_categories = session.query(Category).all() 
-        latestItems = session.query(CategoryItem).join(CategoryItem.category
-            ).order_by(desc(CategoryItem.date_added)).limit(10).all()
-        
+        local_categories = session.query(Category).all()
+        latestItems = session.query(CategoryItem
+                                    ).join(CategoryItem.category
+                                           ).order_by(
+            desc(CategoryItem.date_added
+                 )).limit(10).all()
+
         localUser = None
         try:
             user_id = login_session['user_id']
@@ -289,19 +293,17 @@ def showCategory():
         except:
             user_id = 0
 
-
         return render_template('catalog.html',
-            categories = local_categories,
-            latest=latestItems,
-            user=localUser)
+                               categories=local_categories,
+                               latest=latestItems,
+                               user=localUser)
 
     except Exception, e:
-        return e.args 
-    
-    #print local_categories
+        return e.args
 
-    
-    
+    # print local_categories
+
+
 @app.route('/catalog.json')
 @app.route('/catalog/json')
 def showCatalogJSON():
@@ -309,11 +311,12 @@ def showCatalogJSON():
 
         Retusr a JSON string that contains all the categories in the database
     """
-    local_categories = session.query(Category).all() 
+    local_categories = session.query(Category).all()
 
-    return jsonify(categories = [i.serialize for i in local_categories])
+    return jsonify(categories=[i.serialize for i in local_categories])
 
-@app.route('/catalog/new', methods=['GET','POST'])
+
+@app.route('/catalog/new', methods=['GET', 'POST'])
 def newCategory():
     """ Creates a new category
 
@@ -333,26 +336,24 @@ def newCategory():
         return redirect(url_for('showCategory'))
 
     if request.method == 'POST':
-        newCatego = Category(name=request.form['name'],user_id=localUser.id)
-        session.add( newCatego )
+        newCatego = Category(name=request.form['name'], user_id=localUser.id)
+        session.add(newCatego)
         session.commit()
         flash("new category %s created" % newCatego.name)
         return redirect(url_for('showCategory'))
     else:
         return render_template('newCatego.html')
-    
 
 
-@app.route('/catalog/<string:category_name>/edit', methods=['GET','POST'])
+@app.route('/catalog/<string:category_name>/edit', methods=['GET', 'POST'])
 def editCategory(category_name):
-
     """ Edits an existen category
 
-        This route modifies the category named in category_name, 
+        This route modifies the category named in category_name,
         to reach here a user session needs to be active,
         in the category list, only those coteagories created by the current
         user display the edit link.
-       
+
         Args:
             category_name: name of the category to edit
     """
@@ -364,7 +365,7 @@ def editCategory(category_name):
     except Exception, e:
         flash("You must log in first")
         return redirect(url_for('showCategory'))
-    
+
     localCategory = session.query(Category).filter_by(name=category_name).one()
     if request.method == 'POST':
         oldName = localCategory.name
@@ -378,18 +379,18 @@ def editCategory(category_name):
             return redirect(url_for('showCategory'))
         else:
             flash("use another name")
-            return render_template('editCatego.html',category = localCategory)
+            return render_template('editCatego.html', category=localCategory)
 
     else:
-        return render_template('editCatego.html',category = localCategory)
+        return render_template('editCatego.html', category=localCategory)
 
 
-@app.route('/catalog/<string:category_name>/delete', methods=['GET','POST'])
+@app.route('/catalog/<string:category_name>/delete', methods=['GET', 'POST'])
 def deleteCategory(category_name):
     """ Deletes a category
 
         This route deletes the category named category_name,
-        A user session need to be active, only those coteagories created by 
+        A user session need to be active, only those coteagories created by
         the current user display the delete link.
 
         Args:
@@ -406,7 +407,7 @@ def deleteCategory(category_name):
     localCategory = session.query(Category).filter_by(name=category_name).one()
 
     if request.method == 'POST':
-        
+
         session.delete(localCategory)
         session.commit()
 
@@ -415,8 +416,7 @@ def deleteCategory(category_name):
         return redirect(url_for('showCategory'))
     else:
         return render_template('deleteCatego.html',
-            category = localCategory)
-
+                               category=localCategory)
 
 
 @app.route('/catalog/<string:category_name>/JSON')
@@ -427,13 +427,13 @@ def showCategoryJSON(category_name):
             category_name: name of the category to look for
     """
     try:
-        localCategory = session.query(Category).filter_by(name=category_name).one() 
+        localCategory = session.query(
+            Category).filter_by(name=category_name).one()
 
         return jsonify(localCategory.serialize)
     except Exception, e:
         return 'Not found'
-    
-    
+
 
 @app.route('/catalog/<string:category_name>')
 @app.route('/catalog/<string:category_name>/list')
@@ -441,38 +441,41 @@ def showCategoryJSON(category_name):
 def showCategoryList(category_name):
     """ Display the items list of a category
 
-        Renders the web page of a given category, if there's a valid session and
-        the current user is the owner of this category, the paga will display
-        options to add/edit/delete items for this category.
+        Renders the web page of a given category, if there's a valid session
+        and the current user is the owner of this category, the paga will
+        display options to add/edit/delete items for this category.
 
         Args:
             category_name: name of the category to look for
 
     """
     try:
-    
-        localCategory = session.query(Category).filter_by(name=category_name).one()
+
+        localCategory = session.query(
+            Category).filter_by(name=category_name).one()
         local_items = session.query(CategoryItem).filter_by(
             category_id=localCategory.id).all()
 
-        user_id = login_session['user_id']
+        localUser = None
+        try:
+            user_id = login_session['user_id']
+            localUser = session.query(User).filter_by(id=user_id).one()
+        except KeyError, e:
+            print "No active session"
 
-        localUser = session.query(User).filter_by(id=user_id).one()
-
-        return render_template('categoryList.html', 
-                items=local_items, 
-                category=localCategory, 
-                user=localUser)
-
+        return render_template('categoryList.html',
+                               items=local_items,
+                               category=localCategory,
+                               user=localUser)
 
     except NoResultFound, e:
         flash("Category %s, not found" % category_name)
 
         return redirect(url_for('showCategory'))
 
-    
+
 @app.route('/catalog/<string:category_name>/<string:item_name>')
-def showCategoryItem(category_name,item_name):
+def showCategoryItem(category_name, item_name):
 
     localUser = None
     try:
@@ -483,18 +486,18 @@ def showCategoryItem(category_name,item_name):
 
     localCategory = session.query(Category).filter_by(name=category_name).one()
     localItem = session.query(CategoryItem).filter_by(
-              category_id=localCategory.id).filter_by(name=item_name).one()
+        category_id=localCategory.id).filter_by(name=item_name).one()
 
     return render_template('showItem.html',
-        category=localCategory,
-        item=localItem,
-        user=localUser)
+                           category=localCategory,
+                           item=localItem,
+                           user=localUser)
 
 
-@app.route('/catalog/<string:category_name>/list/new', methods=['GET','POST'])
+@app.route('/catalog/<string:category_name>/list/new', methods=['GET', 'POST'])
 def newCategoryItem(category_name):
     """ Creates a new item
-        
+
         Add a new item in the database, linked to a category and to a user.
         A valid session need to be active, only the user who owns this category
         can add new items to it.
@@ -509,24 +512,25 @@ def newCategoryItem(category_name):
         localUser = session.query(User).filter_by(id=current_user_id).one()
     except Exception, e:
         flash("You must log in first")
-        return redirect(url_for('showCategoryList',category_name=category_name))
+        return redirect(url_for('showCategoryList',
+                                category_name=category_name))
 
     localCategory = session.query(Category).filter_by(name=category_name).one()
 
     if localCategory.user_id != localUser.id:
         flash('Only the owner can modify this list')
         return redirect(url_for('showCategoryList',
-            category_name=localCategory.name))        
+                                category_name=localCategory.name))
 
     if request.method == 'POST':
 
         if request.form['name']:
             newItem = CategoryItem(
-                name = request.form['name'],
-                description = request.form['descript'],
-                category_id = localCategory.id,
-                user_id = current_user_id
-                )
+                name=request.form['name'],
+                description=request.form['descript'],
+                category_id=localCategory.id,
+                user_id=current_user_id
+            )
 
             session.add(newItem)
             session.commit()
@@ -535,15 +539,16 @@ def newCategoryItem(category_name):
             flash('bad data used')
 
         return redirect(url_for('showCategoryList',
-            category_name=localCategory.name))
+                                category_name=localCategory.name))
     else:
-        return render_template('newCategoItem.html',category=localCategory)
+        return render_template('newCategoItem.html', category=localCategory)
+
 
 @app.route('/catalog/<string:category_name>/list/<string:item_name>/edit',
-    methods=['GET','POST'])
-def editCategoryItem(category_name,item_name):
+           methods=['GET', 'POST'])
+def editCategoryItem(category_name, item_name):
     """ Modifies an existing item
-        
+
         Changes some values of an item in the database.
         A valid session need to be active, only the user who owns this category
         can make modifications to the items
@@ -559,7 +564,8 @@ def editCategoryItem(category_name,item_name):
         localUser = session.query(User).filter_by(id=current_user_id).one()
     except Exception, e:
         flash("You must log in first")
-        return redirect(url_for('showCategoryList',category_name=category_name))
+        return redirect(url_for('showCategoryList',
+                                category_name=category_name))
 
     localCategory = session.query(Category).filter_by(name=category_name).one()
     localItem = session.query(CategoryItem).filter_by(
@@ -568,7 +574,7 @@ def editCategoryItem(category_name,item_name):
     if localCategory.user_id != localUser.id:
         flash('Only the owner can modify this list')
         return redirect(url_for('showCategoryList',
-            category_name=localCategory.name))  
+                                category_name=localCategory.name))
 
     print localItem.name
 
@@ -580,10 +586,11 @@ def editCategoryItem(category_name,item_name):
             change = True
 
         oldDesc = localItem.description
-        if request.form['descript'] and request.form['descript'] != localItem.description:
-            localItem.description = request.form['descript'] 
-            change = True
+        if request.form['descript'] and \
+                request.form['descript'] != localItem.description:
 
+            localItem.description = request.form['descript']
+            change = True
 
         if change:
             session.add(localItem)
@@ -592,20 +599,20 @@ def editCategoryItem(category_name,item_name):
         else:
             flash('No change made')
 
-        
         return redirect(url_for('showCategoryList',
-            category_name=localCategory.name))
+                                category_name=localCategory.name))
     else:
         localItem.name
         return render_template('editCategoItem.html',
-            category=localCategory,
-            item=localItem)
+                               category=localCategory,
+                               item=localItem)
+
 
 @app.route('/catalog/<string:category_name>/list/<string:item_name>/delete',
-    methods=['GET','POST'])
-def deleteCategoryItem(category_name,item_name):
+           methods=['GET', 'POST'])
+def deleteCategoryItem(category_name, item_name):
     """ Deletes an existing item
-        
+
         Removes an item from the database.
         A valid session need to be active, only the user who owns this category
         can delete  the items
@@ -621,27 +628,29 @@ def deleteCategoryItem(category_name,item_name):
         localUser = session.query(User).filter_by(id=user_id).one()
     except Exception, e:
         flash("You must log in first")
-        return redirect(url_for('showCategoryList',category_name=category_name))
+        return redirect(url_for('showCategoryList',
+                                category_name=category_name))
 
     localCategory = session.query(Category).filter_by(name=category_name).one()
     localItem = session.query(CategoryItem).filter_by(
         category_id=localCategory.id).filter_by(name=item_name).one()
-    #TODO check if the logged in user i the cretor
+    # TODO check if the logged in user i the cretor
     current_user_id = localCategory.user_id
-    localCreator = session.query(User).filter_by(id=localCategory.user_id).one()
+    localCreator = session.query(User).filter_by(
+        id=localCategory.user_id).one()
 
     if request.method == 'POST':
         session.delete(localItem)
-        session.commit()        
+        session.commit()
 
         flash('Item %s deleted' % item_name)
-        
+
         return redirect(url_for('showCategoryList',
-            category_name=localCategory.name))
+                                category_name=localCategory.name))
     else:
         return render_template('deleteCategoItem.html',
-            category=localCategory,
-            item=localItem)
+                               category=localCategory,
+                               item=localItem)
 
 if __name__ == '__main__':
     app.debug = True
