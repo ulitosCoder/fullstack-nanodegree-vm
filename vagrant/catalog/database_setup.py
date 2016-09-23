@@ -19,9 +19,9 @@ class User(Base):
     """
     __tablename__ = 'user'
     id = Column(Integer, primary_key=True)
-    name = Column(String(80), nullable=False)
-    email = Column(String(80), nullable=True)
-    picture = Column(String(80), nullable=True)
+    name = Column(String(280), nullable=False)
+    email = Column(String(280), nullable=True)
+    picture = Column(String(280), nullable=True)
 
 
 class Category(Base):
@@ -33,7 +33,7 @@ class Category(Base):
     """
     __tablename__ = 'category'
     id = Column(Integer, primary_key=True)
-    name = Column(String(80), nullable=False)
+    name = Column(String(80), nullable=False,unique=True)
     user_id = Column(Integer, ForeignKey('user.id'))
 
     user = relationship(User)
@@ -77,6 +77,6 @@ class CategoryItem(Base):
             'date_added': self.date_added
         }
 
-
-engine = create_engine('sqlite:///item_catalog.db')
+engine = create_engine("postgresql://catalog:catalog@localhost/catalog")
+#engine = create_engine('sqlite:///item_catalog.db')
 Base.metadata.create_all(engine)

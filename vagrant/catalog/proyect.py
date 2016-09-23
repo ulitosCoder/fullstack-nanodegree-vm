@@ -26,7 +26,8 @@ import requests
 
 app = Flask(__name__)
 
-engine = create_engine('sqlite:///item_catalog.db')
+#engine = create_engine('sqlite:///item_catalog.db')
+engine = create_engine("postgresql://catalog:catalog@localhost/catalog")
 Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
@@ -335,14 +336,20 @@ def newCategory():
         flash("You must log in first")
         return redirect(url_for('showCategory'))
 
-    if request.method == 'POST':
-        newCatego = Category(name=request.form['name'], user_id=localUser.id)
-        session.add(newCatego)
-        session.commit()
-        flash("new category %s created" % newCatego.name)
+    try:
+        if request.method == 'POST':
+            newCatego = Category(name=request.form['name'], user_id=localUser.id)
+            session.add(newCatego)
+            session.commit()
+            flash("new category %s created" % newCatego.name)
+            return redirect(url_for('showCategory'))
+        else:
+            return render_template('newCatego.html')
+    except:
+        session.rollback()
+        flash("category name %s already exists" % newCatego.name)
         return redirect(url_for('showCategory'))
-    else:
-        return render_template('newCatego.html')
+
 
 
 @app.route('/catalog/<string:category_name>/edit', methods=['GET', 'POST'])
@@ -655,4 +662,4 @@ def deleteCategoryItem(category_name, item_name):
 if __name__ == '__main__':
     app.debug = True
     app.secret_key = 'super_secret_key'
-    app.run(host='0.0.0.0', port=8000)
+    app.run(host='0.0.0.0', port=80)
