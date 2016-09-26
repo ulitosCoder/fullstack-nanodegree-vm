@@ -22,6 +22,9 @@ from oauth2client.client import FlowExchangeError
 import httplib2
 import json
 import requests
+import logging
+
+logging.basicConfig(filename='/var/log/catalog/msgs.log',level=logging.DEBUG)
 
 
 app = Flask(__name__)
@@ -34,7 +37,7 @@ session = DBSession()
 
 
 CLIENT_ID = json.loads(
-    open('client_secrets.json', 'r').read())['web']['client_id']
+    open('/var/www/catalog/client_secrets.json', 'r').read())['web']['client_id']
 APPLICATION_NAME = "Item Catalog"
 
 
@@ -85,10 +88,16 @@ def showLogin():
         This route creates a one time token for protection and shows the
         login page to ask the user for credentials
     """
+
+    logging.debug('This message should go to the log file')
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
                     for x in xrange(32))
+
+    logging.debug('state val %s' % state)
+    
     login_session['state'] = state
     print login_session['state']
+    logging.debug('calling render login html')
     # return "The current session state is %s" % login_session['state']
     return render_template('login.html', STATE=state)
 
@@ -277,6 +286,8 @@ def showCategory():
         categories. And create, edit, delete items inside the user's
         categories.
     """
+    logging.debug('show catalog')
+
     try:
         local_categories = session.query(Category).all()
         latestItems = session.query(CategoryItem
@@ -661,5 +672,6 @@ def deleteCategoryItem(category_name, item_name):
 
 if __name__ == '__main__':
     app.debug = True
-    app.secret_key = 'super_secret_key'
+    app.secret_key = 'super_secret_key0'
+    app.config['SESSION_TYPE'] = 'filesystem'
     app.run(host='0.0.0.0', port=80)
