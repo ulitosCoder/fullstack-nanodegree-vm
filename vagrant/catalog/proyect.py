@@ -28,6 +28,7 @@ logging.basicConfig(filename='/var/log/catalog/msgs.log',level=logging.DEBUG)
 
 
 app = Flask(__name__)
+app.secret_key = 'super_secret_key'
 
 #engine = create_engine('sqlite:///item_catalog.db')
 engine = create_engine("postgresql://catalog:catalog@localhost/catalog")
@@ -121,7 +122,7 @@ def gconnect():
     print 'begin try1'
     try:
         # Upgrade the authorization code into a credentials object
-        oauth_flow = flow_from_clientsecrets('client_secrets.json', scope='')
+        oauth_flow = flow_from_clientsecrets('/var/www/catalog/client_secrets.json', scope='')
         oauth_flow.redirect_uri = 'postmessage'
         credentials = oauth_flow.step2_exchange(code)
     except FlowExchangeError:
